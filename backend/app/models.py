@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, JSON, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import Uuid
 
 
 def new_uuid() -> str:
@@ -17,10 +18,13 @@ class Base(DeclarativeBase):
     pass
 
 
+uuid_type = Uuid(as_uuid=False)
+
+
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    id: Mapped[str] = mapped_column(uuid_type, primary_key=True, default=new_uuid)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[str | None] = mapped_column(String(100))
@@ -44,9 +48,9 @@ class User(Base):
 class UserSession(Base):
     __tablename__ = "user_sessions"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    id: Mapped[str] = mapped_column(uuid_type, primary_key=True, default=new_uuid)
     user_id: Mapped[str] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        uuid_type, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     token_jti: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
@@ -62,9 +66,9 @@ class UserSession(Base):
 class Project(Base):
     __tablename__ = "projects"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    id: Mapped[str] = mapped_column(uuid_type, primary_key=True, default=new_uuid)
     user_id: Mapped[str] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        uuid_type, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -91,9 +95,9 @@ class Project(Base):
 class ProjectSnapshot(Base):
     __tablename__ = "project_snapshots"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    id: Mapped[str] = mapped_column(uuid_type, primary_key=True, default=new_uuid)
     project_id: Mapped[str] = mapped_column(
-        ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True
+        uuid_type, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str | None] = mapped_column(String(255))
     state: Mapped[dict] = mapped_column(JSON, nullable=False)

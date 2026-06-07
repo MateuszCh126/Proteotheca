@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users (lower(email));
 
 CREATE TABLE IF NOT EXISTS user_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

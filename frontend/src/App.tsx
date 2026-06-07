@@ -303,7 +303,7 @@ export const App: React.FC = () => {
           <div className={`xl:col-span-6 flex flex-col space-y-5 ${layoutTab === 'visuals' ? 'block' : 'hidden xl:flex'}`}>
             <div className="space-y-2">
               <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
-                WebGL Molecular Viewer
+                Molecular Structure Viewer
               </span>
               <MolViewer
                 pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'}

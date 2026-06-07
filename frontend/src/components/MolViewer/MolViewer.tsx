@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Play, ZoomIn, ZoomOut, Maximize2, Compass, Layers, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Atom, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
 
 export type MolViewerRepresentation = 'cartoon' | 'surface' | 'spheres';
 export type MolViewerColorMode = 'plddt' | 'chain' | 'hydrophobicity';
@@ -19,28 +19,10 @@ export const MolViewer: React.FC<MolViewerProps> = ({
   onRepresentationChange,
   onColorModeChange,
 }) => {
-  const [isActive, setIsActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [internalRepresentation, setInternalRepresentation] = useState<MolViewerRepresentation>('cartoon');
   const [internalColorMode, setInternalColorMode] = useState<MolViewerColorMode>('plddt');
   const representation = controlledRepresentation ?? internalRepresentation;
   const colorMode = controlledColorMode ?? internalColorMode;
-
-  useEffect(() => {
-    // Reset active state when pdbId changes to ensure user activates it deliberately
-    setIsActive(false);
-    setIsLoading(false);
-  }, [pdbId]);
-
-  const handleActivate = () => {
-    setIsActive(true);
-    setIsLoading(true);
-    // Simulate WebGL init and PDB load delay
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  };
 
   const handleRepresentationChange = (nextRepresentation: MolViewerRepresentation) => {
     setInternalRepresentation(nextRepresentation);
@@ -53,117 +35,100 @@ export const MolViewer: React.FC<MolViewerProps> = ({
   };
 
   return (
-    <div 
-      className="relative w-full h-[400px] rounded-2xl overflow-hidden border border-white/10 bg-slate-900/60 backdrop-blur-md shadow-inner group flex flex-col items-center justify-center"
+    <div
+      className="group relative flex h-[400px] w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 shadow-inner backdrop-blur-md"
       data-testid="mol-viewer-container"
     >
-      {/* 3D WebGL Canvas Placeholder Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 pointer-events-none select-none z-0">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500 via-transparent to-transparent" />
-        {isActive && !isLoading ? (
-          <div className="space-y-2 text-center">
-            <span className="text-4xs font-mono uppercase tracking-widest text-cyan-400 block animate-pulse">
-              [WebGL Render Active]
-            </span>
-            <div className="w-24 h-24 mx-auto border-2 border-dashed border-cyan-500/20 rounded-full flex items-center justify-center animate-spin duration-10000">
-              <Compass className="w-8 h-8 text-cyan-500/30" />
-            </div>
-            <h4 className="text-xs font-bold text-white uppercase font-outfit">
-              Structure {pdbId} ({representation})
-            </h4>
-            <p className="text-3xs font-mono text-slate-500">
-              Coloring: {colorMode} • Resolution: 2.1 Å
-            </p>
-          </div>
-        ) : null}
+      <div className="pointer-events-none absolute inset-0 z-0 select-none">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-400 via-transparent to-transparent" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(34,211,238,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.35)_1px,transparent_1px)] [background-size:42px_42px]" />
       </div>
 
-      {/* Activation Guard Overlay */}
-      {!isActive && (
-        <div 
-          onClick={handleActivate}
-          className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group-hover:bg-slate-950/70 z-20"
-          data-testid="mol-viewer-activation-guard"
-        >
-          <div className="p-4 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-3 animate-pulse">
-            <Play className="w-6 h-6 fill-current ml-0.5" />
-          </div>
-          <span className="text-sm font-bold text-white font-outfit">Activate 3D Mol* Viewer</span>
-          <span className="text-xs text-slate-400 mt-1 font-mono">PDB: {pdbId}</span>
-          <span className="text-3xs text-slate-500 mt-2 font-outfit text-center max-w-xs leading-normal">
-            Clicking locks touch scroll gestures and loads WebGL graphics context.
-          </span>
-        </div>
-      )}
+      <div className="absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-3 text-3xs font-bold uppercase tracking-[0.18em] text-slate-400">
+        <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-cyan-200">
+          PDB {pdbId}
+        </span>
+        <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-200">
+          Preview ready
+        </span>
+      </div>
 
-      {/* Loading Overlay */}
-      {isActive && isLoading && (
-        <div 
-          className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center z-30" 
-          data-testid="mol-viewer-loading"
-        >
-          <Loader2 className="w-8 h-8 text-cyan-500 animate-spin mb-3" />
-          <span className="text-xs font-mono text-cyan-400 tracking-wider">LOADING PDB STRUCTURE...</span>
-          <span className="text-3xs text-slate-500 mt-1 font-mono">Connecting to PDB REST API</span>
-        </div>
-      )}
-
-      {/* Floating Control Pad Overlay */}
-      {isActive && !isLoading && (
-        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-slate-950/70 backdrop-blur-md border border-white/10 p-2 rounded-xl shadow-lg z-10 animate-fade-in">
-          {/* Zoom controls */}
-          <div className="flex space-x-1">
-            <button className="p-1.5 hover:bg-white/10 rounded-lg text-slate-300 transition-colors" title="Zoom In">
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-            <button className="p-1.5 hover:bg-white/10 rounded-lg text-slate-300 transition-colors" title="Zoom Out">
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <button className="p-1.5 hover:bg-white/10 rounded-lg text-slate-300 transition-colors" title="Recenter">
-              <Maximize2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <span className="w-px h-5 bg-white/10 self-center" />
-
-          {/* Representation Selector */}
-          <div className="flex items-center space-x-1.5">
-            {(['cartoon', 'surface', 'spheres'] as const).map((rep) => (
-              <button
-                key={rep}
-                onClick={() => handleRepresentationChange(rep)}
-                className={`px-2 py-0.5 rounded text-3xs font-extrabold uppercase transition-all ${
-                  representation === rep
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
-                }`}
-              >
-                {rep}
-              </button>
-            ))}
-          </div>
-
-          <span className="w-px h-5 bg-white/10 self-center" />
-
-          {/* Coloring Selection */}
-          <div className="flex items-center space-x-1.5">
-            {(['plddt', 'chain'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => handleColorModeChange(mode)}
-                className={`px-2 py-0.5 rounded text-3xs font-extrabold uppercase transition-all ${
-                  colorMode === mode
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
+      <div className="absolute inset-0 z-0 flex flex-col items-center justify-center px-6 text-center">
+        <span className="mb-4 block text-3xs font-bold uppercase tracking-[0.28em] text-cyan-300">
+          Structure Preview Ready
+        </span>
+        <div className="relative mx-auto mb-5 h-32 w-32">
+          <div className="absolute inset-0 rounded-full border border-cyan-400/20 bg-cyan-400/5 shadow-[0_0_55px_rgba(34,211,238,0.18)]" />
+          <div className="absolute left-7 top-9 h-px w-20 rotate-[28deg] bg-cyan-300/30" />
+          <div className="absolute left-7 top-[70px] h-px w-20 -rotate-[24deg] bg-violet-300/25" />
+          <div className="absolute left-14 top-6 h-20 w-px rotate-[12deg] bg-emerald-300/25" />
+          <span className="absolute left-5 top-8 h-6 w-6 rounded-full border border-cyan-300/70 bg-cyan-300/20 shadow-[0_0_18px_rgba(34,211,238,0.35)]" />
+          <span className="absolute right-4 top-14 h-5 w-5 rounded-full border border-violet-300/70 bg-violet-300/20 shadow-[0_0_18px_rgba(167,139,250,0.3)]" />
+          <span className="absolute bottom-8 left-10 h-4 w-4 rounded-full border border-emerald-300/70 bg-emerald-300/20" />
+          <span className="absolute right-9 top-7 h-3 w-3 rounded-full bg-cyan-200/70" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Atom className="h-10 w-10 text-cyan-200/70" />
           </div>
         </div>
-      )}
+        <h4 className="font-outfit text-sm font-extrabold uppercase text-white">
+          Structure {pdbId} ({representation})
+        </h4>
+        <p className="mt-1 font-mono text-3xs text-slate-500">
+          Coloring: {colorMode} | Ligand-ready model preview
+        </p>
+      </div>
+
+      <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/70 p-2 shadow-lg backdrop-blur-md">
+        <div className="flex space-x-1">
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Zoom In">
+            <ZoomIn className="h-3.5 w-3.5" />
+          </button>
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Zoom Out">
+            <ZoomOut className="h-3.5 w-3.5" />
+          </button>
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Recenter">
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <span className="h-5 w-px self-center bg-white/10" />
+
+        <div className="flex items-center space-x-1.5">
+          {(['cartoon', 'surface', 'spheres'] as const).map((rep) => (
+            <button
+              key={rep}
+              onClick={() => handleRepresentationChange(rep)}
+              className={`rounded border px-2 py-0.5 text-3xs font-extrabold uppercase transition-all ${
+                representation === rep
+                  ? 'border-cyan-500/30 bg-cyan-500/20 text-cyan-300'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {rep}
+            </button>
+          ))}
+        </div>
+
+        <span className="h-5 w-px self-center bg-white/10" />
+
+        <div className="flex items-center space-x-1.5">
+          {(['plddt', 'chain'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => handleColorModeChange(mode)}
+              className={`rounded border px-2 py-0.5 text-3xs font-extrabold uppercase transition-all ${
+                colorMode === mode
+                  ? 'border-cyan-500/30 bg-cyan-500/20 text-cyan-300'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
+
 export default MolViewer;

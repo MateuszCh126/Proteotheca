@@ -1,12 +1,14 @@
 import React from 'react';
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { GnomadData, GnomadPopulation } from '../../types/variant';
+import { useI18n } from '../../context/I18nContext';
 
 interface AlleleFreqChartProps {
   data: GnomadData;
 }
 
 export const GlobalFreqGauge: React.FC<{ frequency: number }> = ({ frequency }) => {
+  const { t } = useI18n();
   // Map frequency to scale 0 - 100 logarithmically from 1e-6 to 1
   const logVal = Math.max(0, ((Math.log10(frequency || 1e-6) + 6) / 6) * 100);
   
@@ -37,7 +39,7 @@ export const GlobalFreqGauge: React.FC<{ frequency: number }> = ({ frequency }) 
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/4 text-center">
-        <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Global AF</span>
+        <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">{t('variant.globalAf')}</span>
         <span className="text-base font-extrabold tracking-tight text-white block font-outfit" data-testid="global-af-value">
           {frequency.toExponential(3)}
         </span>
@@ -50,6 +52,7 @@ export const GlobalFreqGauge: React.FC<{ frequency: number }> = ({ frequency }) 
 };
 
 export const PopulationBarChart: React.FC<{ populations: GnomadPopulation[] }> = ({ populations }) => {
+  const { t } = useI18n();
   const sortedData = [...populations].sort((a, b) => b.freq - a.freq);
 
   const formatTick = (tick: number) => {
@@ -94,10 +97,10 @@ export const PopulationBarChart: React.FC<{ populations: GnomadPopulation[] }> =
                   <div className="glass-panel p-2.5 rounded-lg border border-white/10 shadow-xl bg-slate-950/90 backdrop-blur-md text-3xs">
                     <p className="font-bold text-white mb-1 font-outfit">{item.pop}</p>
                     <p className="text-slate-300">
-                      Freq: <span className="font-mono text-cyan-400">{item.freq.toExponential(4)}</span>
+                      {t('variant.freq')} <span className="font-mono text-cyan-400">{item.freq.toExponential(4)}</span>
                     </p>
                     <p className="text-slate-400 text-2xs mt-0.5">
-                      Percentage: {(item.freq * 100).toFixed(5)}%
+                      {t('variant.percentage')} {(item.freq * 100).toFixed(5)}%
                     </p>
                   </div>
                 );
@@ -117,17 +120,19 @@ export const PopulationBarChart: React.FC<{ populations: GnomadPopulation[] }> =
 };
 
 export const AlleleFreqChart: React.FC<AlleleFreqChartProps> = ({ data }) => {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-4">
       <div>
         <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block mb-2">
-          Allele Frequency Dial (logarithmic scale)
+          {t('variant.alleleFrequencyDial')}
         </span>
         <GlobalFreqGauge frequency={data.allele_frequency} />
       </div>
       <div>
         <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block mb-2">
-          gnomAD Ancestry Frequency Breakdown
+          {t('variant.ancestryBreakdown')}
         </span>
         <PopulationBarChart populations={data.populations} />
       </div>

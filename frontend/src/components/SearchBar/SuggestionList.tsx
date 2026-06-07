@@ -1,5 +1,6 @@
 import React from 'react';
 import { SuggestionItem } from '../../hooks/useSearch';
+import { useI18n } from '../../context/I18nContext';
 
 interface SuggestionListProps {
   suggestions: SuggestionItem[];
@@ -14,6 +15,7 @@ export const SuggestionList: React.FC<SuggestionListProps> = ({
   onSelect,
   onHover,
 }) => {
+  const { t } = useI18n();
   if (suggestions.length === 0) return null;
 
   return (
@@ -44,7 +46,7 @@ export const SuggestionList: React.FC<SuggestionListProps> = ({
           >
             <span className="text-white font-medium font-outfit">{item.value}</span>
             <span className={`text-2xs uppercase tracking-wider px-2 py-0.5 rounded border ${badgeColor} font-semibold`}>
-              {item.type}
+              {t(`entity.${item.type}` as const)}
             </span>
           </div>
         );

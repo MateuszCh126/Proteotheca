@@ -1,16 +1,19 @@
 import React from 'react';
 import { ChEMBLActiveCompound } from '../../types/disease';
 import { ShieldAlert } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface ChemblDrugsTableProps {
   compounds: ChEMBLActiveCompound[];
 }
 
 export const ChemblDrugsTable: React.FC<ChemblDrugsTableProps> = ({ compounds }) => {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-2.5">
       <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
-        ChEMBL Bioactive Compounds
+        {t('therapeutic.chemblBioactiveCompounds')}
       </span>
       <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
         {compounds.map((c) => {
@@ -34,7 +37,7 @@ export const ChemblDrugsTable: React.FC<ChemblDrugsTableProps> = ({ compounds })
                 </div>
                 {isPotent && (
                   <span className="text-3xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold shadow-accent-success/10 shadow-md">
-                    High Potency
+                    {t('therapeutic.highPotency')}
                   </span>
                 )}
               </div>

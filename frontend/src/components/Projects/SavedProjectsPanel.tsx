@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Archive, FolderOpen, RefreshCw, X } from 'lucide-react';
 import { projectsApi, type SavedProject } from '../../api/projects';
+import { useI18n } from '../../context/I18nContext';
 
 interface SavedProjectsPanelProps {
   open: boolean;
@@ -9,6 +10,7 @@ interface SavedProjectsPanelProps {
 }
 
 export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProjectsPanelProps) {
+  const { t } = useI18n();
   const [projects, setProjects] = useState<SavedProject[]>([]);
   const [loading, setLoading] = useState(false);
   const [actingProjectId, setActingProjectId] = useState<string | null>(null);
@@ -20,7 +22,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
     try {
       setProjects(await projectsApi.list());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load projects');
+      setError(err instanceof Error ? err.message : t('projects.couldNotLoadList'));
     } finally {
       setLoading(false);
     }
@@ -41,13 +43,13 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
       const fullProject = await projectsApi.get(project.id);
       const state = fullProject.latest_snapshot?.state;
       if (!state) {
-        setError('This project does not have a saved snapshot.');
+        setError(t('projects.noSnapshot'));
         return;
       }
       onLoad(state);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load project');
+      setError(err instanceof Error ? err.message : t('projects.couldNotLoad'));
     } finally {
       setActingProjectId(null);
     }
@@ -60,7 +62,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
       await projectsApi.archive(project.id);
       setProjects((current) => current.filter((item) => item.id !== project.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not archive project');
+      setError(err instanceof Error ? err.message : t('projects.couldNotArchive'));
     } finally {
       setActingProjectId(null);
     }
@@ -71,23 +73,23 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
       <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
         <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
           <FolderOpen className="h-4 w-4 shrink-0 text-cyan-300" />
-          <span className="truncate">Saved Projects</span>
+          <span className="truncate">{t('projects.savedProjects')}</span>
         </div>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => void loadProjects()} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Refresh projects">
+          <button type="button" onClick={() => void loadProjects()} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('projects.refresh')}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Close projects panel">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('projects.closePanel')}>
             <X className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {loading && <p className="py-4 text-xs text-slate-400">Loading saved research...</p>}
+      {loading && <p className="py-4 text-xs text-slate-400">{t('projects.loadingSaved')}</p>}
       {error && <p className="mt-3 rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
 
       <div className="custom-scrollbar max-h-[70vh] overflow-y-auto divide-y divide-white/10">
-        {!loading && projects.length === 0 && <p className="py-4 text-xs text-slate-400">No saved projects yet.</p>}
+        {!loading && projects.length === 0 && <p className="py-4 text-xs text-slate-400">{t('projects.empty')}</p>}
 
         {projects.map((project) => (
           <article key={project.id} className="space-y-2 py-3">
@@ -114,7 +116,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
                 disabled={actingProjectId === project.id}
                 className="rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
               >
-                Load
+                {t('common.load')}
               </button>
               <button
                 type="button"
@@ -123,7 +125,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
                 className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/10 disabled:opacity-60"
               >
                 <Archive className="mr-1 inline-block h-3.5 w-3.5" />
-                Archive
+                {t('common.archive')}
               </button>
             </div>
           </article>

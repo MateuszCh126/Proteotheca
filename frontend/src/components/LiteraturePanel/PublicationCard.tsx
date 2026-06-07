@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, ChevronDown, ChevronUp, Copy, Check, ExternalLink } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface PublicationCardProps {
   id: string; // pmid or doi
@@ -22,6 +23,7 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
   doi,
   source,
 }) => {
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -68,7 +70,7 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
       </div>
 
       <p className="text-3xs text-slate-400 italic line-clamp-1">
-        {authors} {journal ? `• ${journal}` : ''}
+        {authors} {journal ? `| ${journal}` : ''}
       </p>
 
       {/* Accordion abstract drawer */}
@@ -79,7 +81,7 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
         }`}
       >
         <div className="p-3 bg-black/40 border border-white/5 rounded-lg text-2xs text-slate-300 leading-relaxed font-outfit">
-          <strong className="text-slate-400 block mb-1">Abstract:</strong>
+          <strong className="text-slate-400 block mb-1">{t('literature.abstract')}</strong>
           {abstract}
         </div>
       </div>
@@ -93,17 +95,17 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
               data-testid="literature-doi-link"
               onClick={handleCopyDoi}
               className="flex items-center space-x-1 hover:text-cyan-400 transition-colors p-1"
-              title="Copy DOI"
+              title={t('literature.copyDoi')}
             >
               {copied ? (
                 <>
                   <Check className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
+                  <span className="text-emerald-400">{t('literature.copied')}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3 h-3" />
-                  <span>Copy DOI</span>
+                  <span>{t('literature.copyDoi')}</span>
                 </>
               )}
             </button>

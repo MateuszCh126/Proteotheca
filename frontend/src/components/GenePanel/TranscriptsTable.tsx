@@ -1,5 +1,6 @@
 import React from 'react';
 import { EnsemblTranscript } from '../../types/gene';
+import { useI18n } from '../../context/I18nContext';
 
 interface TranscriptsTableProps {
   transcripts: EnsemblTranscript[];
@@ -12,13 +13,15 @@ export const TranscriptsTable: React.FC<TranscriptsTableProps> = ({
   selectedTranscriptId,
   onSelectTranscript,
 }) => {
+  const { t } = useI18n();
+
   return (
     <div className="overflow-hidden rounded-xl border border-white/5 bg-slate-950/20">
       <table className="w-full text-left border-collapse" data-testid="transcripts-table">
         <thead>
           <tr className="border-b border-white/10 bg-white/5 text-2xs uppercase tracking-wider text-slate-400 font-semibold">
-            <th className="px-4 py-2.5">Transcript ID</th>
-            <th className="px-4 py-2.5 text-right">Length (bp)</th>
+            <th className="px-4 py-2.5">{t('gene.transcriptId')}</th>
+            <th className="px-4 py-2.5 text-right">{t('gene.lengthBp')}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5 text-xs">

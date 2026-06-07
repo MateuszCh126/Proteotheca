@@ -3,6 +3,7 @@ import { GeneData } from '../../types/gene';
 import TranscriptsTable from './TranscriptsTable';
 import UniProtDetails from './UniProtDetails';
 import { Dna, Activity, Link2, ExternalLink } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface GenePanelProps {
   geneData: GeneData | null;
@@ -10,6 +11,7 @@ interface GenePanelProps {
 }
 
 export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => {
+  const { t } = useI18n();
   const [selectedTranscriptId, setSelectedTranscriptId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'transcripts' | 'uniprot' | 'opentargets'>('transcripts');
 
@@ -25,7 +27,7 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
     return (
       <div className="glass-panel p-6 flex flex-col items-center justify-center min-h-[300px]" data-testid="gene-panel">
         <div className="w-8 h-8 border-4 border-accent-cyan border-t-transparent rounded-full animate-spin mb-4" />
-        <span className="text-xs font-mono text-accent-cyan">FETCHING GENE DATA...</span>
+        <span className="text-xs font-mono text-accent-cyan">{t('gene.fetching')}</span>
       </div>
     );
   }
@@ -36,9 +38,9 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
         <div className="p-3 bg-white/5 rounded-full text-slate-400 mb-3">
           <Dna className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-white mb-1 font-outfit">No Gene Target Loaded</h3>
+        <h3 className="text-sm font-bold text-white mb-1 font-outfit">{t('gene.noTarget')}</h3>
         <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-          Search for a gene symbol (e.g. <strong className="text-cyan-400">BRAF</strong>) or genetic variant to load target pathways.
+          {t('gene.noTargetDescription', { example: 'BRAF' })}
         </p>
       </div>
     );
@@ -58,7 +60,7 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
               {geneData.symbol}
             </h2>
             <span className="text-3xs font-mono bg-cyan-500/10 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-500/20">
-              Gene
+              {t('entity.gene')}
             </span>
           </div>
           <p className="text-2xs text-slate-400 font-mono mt-0.5">
@@ -81,9 +83,9 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
         {(['transcripts', 'uniprot', 'opentargets'] as const).map((tab) => {
           const isActive = activeTab === tab;
           let label = '';
-          if (tab === 'transcripts') label = 'Transcripts';
-          if (tab === 'uniprot') label = 'UniProt';
-          if (tab === 'opentargets') label = 'Associations';
+          if (tab === 'transcripts') label = t('gene.transcripts');
+          if (tab === 'uniprot') label = t('gene.uniprot');
+          if (tab === 'opentargets') label = t('gene.associations');
 
           return (
             <button
@@ -113,7 +115,7 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
             />
             {selectedTranscript && (
               <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-2xs text-slate-400 flex items-center justify-between">
-                <span>Selected length:</span>
+                <span>{t('gene.selectedLength')}</span>
                 <span className="font-mono text-cyan-400 font-bold">{selectedTranscript.length} bp</span>
               </div>
             )}
@@ -127,7 +129,7 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
         {activeTab === 'opentargets' && (
           <div className="space-y-2.5">
             <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
-              Open Targets Disease Associations
+              {t('gene.openTargetsAssociations')}
             </span>
             <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
               {geneData.opentargets.associations.map((assoc) => (
@@ -141,7 +143,7 @@ export const GenePanel: React.FC<GenePanelProps> = ({ geneData, isLoading }) => 
                     <span className="text-3xs font-mono text-slate-500">{assoc.disease_id}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-3xs text-slate-400 block mb-0.5">Score</span>
+                    <span className="text-3xs text-slate-400 block mb-0.5">{t('common.score')}</span>
                     <div className="flex items-center space-x-1.5">
                       <span className="font-mono font-bold text-cyan-400">{assoc.score.toFixed(2)}</span>
                       <div className="w-12 h-1.5 bg-white/10 rounded-full overflow-hidden">

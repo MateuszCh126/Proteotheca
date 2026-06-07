@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Atom, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 export type MolViewerRepresentation = 'cartoon' | 'surface' | 'spheres';
 export type MolViewerColorMode = 'plddt' | 'chain' | 'hydrophobicity';
@@ -19,6 +20,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({
   onRepresentationChange,
   onColorModeChange,
 }) => {
+  const { t } = useI18n();
   const [internalRepresentation, setInternalRepresentation] = useState<MolViewerRepresentation>('cartoon');
   const [internalColorMode, setInternalColorMode] = useState<MolViewerColorMode>('plddt');
   const representation = controlledRepresentation ?? internalRepresentation;
@@ -49,13 +51,13 @@ export const MolViewer: React.FC<MolViewerProps> = ({
           PDB {pdbId}
         </span>
         <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-200">
-          Preview ready
+          {t('mol.previewReady')}
         </span>
       </div>
 
       <div className="absolute inset-0 z-0 flex flex-col items-center justify-center px-6 text-center">
         <span className="mb-4 block text-3xs font-bold uppercase tracking-[0.28em] text-cyan-300">
-          Structure Preview Ready
+          {t('mol.structurePreviewReady')}
         </span>
         <div className="relative mx-auto mb-5 h-32 w-32">
           <div className="absolute inset-0 rounded-full border border-cyan-400/20 bg-cyan-400/5 shadow-[0_0_55px_rgba(34,211,238,0.18)]" />
@@ -71,22 +73,22 @@ export const MolViewer: React.FC<MolViewerProps> = ({
           </div>
         </div>
         <h4 className="font-outfit text-sm font-extrabold uppercase text-white">
-          Structure {pdbId} ({representation})
+          {t('mol.structure', { pdbId, representation: t(`mol.${representation}` as const) })}
         </h4>
         <p className="mt-1 font-mono text-3xs text-slate-500">
-          Coloring: {colorMode} | Ligand-ready model preview
+          {t('mol.coloring', { colorMode: t(`mol.${colorMode}` as const) })}
         </p>
       </div>
 
       <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/70 p-2 shadow-lg backdrop-blur-md">
         <div className="flex space-x-1">
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Zoom In">
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.zoomIn')}>
             <ZoomIn className="h-3.5 w-3.5" />
           </button>
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Zoom Out">
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.zoomOut')}>
             <ZoomOut className="h-3.5 w-3.5" />
           </button>
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title="Recenter">
+          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.recenter')}>
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -104,7 +106,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({
                   : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
-              {rep}
+              {t(`mol.${rep}` as const)}
             </button>
           ))}
         </div>
@@ -122,7 +124,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({
                   : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
-              {mode}
+              {t(`mol.${mode}` as const)}
             </button>
           ))}
         </div>

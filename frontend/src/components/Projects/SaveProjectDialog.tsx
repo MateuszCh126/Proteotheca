@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Save, X } from 'lucide-react';
 import { type EntityType, projectsApi, type SavedProject } from '../../api/projects';
+import { useI18n } from '../../context/I18nContext';
 
 interface SaveProjectDialogProps {
   state: Record<string, unknown>;
@@ -19,6 +20,7 @@ export default function SaveProjectDialog({
   onClose,
   onSaved,
 }: SaveProjectDialogProps) {
+  const { t } = useI18n();
   const [title, setTitle] = useState(defaultTitle);
   const [description, setDescription] = useState('');
   const [tagInput, setTagInput] = useState(query);
@@ -51,7 +53,7 @@ export default function SaveProjectDialog({
       onSaved(project);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save project');
+      setError(err instanceof Error ? err.message : t('projects.couldNotSave'));
     } finally {
       setSaving(false);
     }
@@ -63,9 +65,9 @@ export default function SaveProjectDialog({
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
             <Save className="h-4 w-4 shrink-0 text-cyan-300" />
-            <span className="truncate">Save research project</span>
+            <span className="truncate">{t('projects.saveResearchProject')}</span>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Close save dialog">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('projects.closeSaveDialog')}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -79,13 +81,13 @@ export default function SaveProjectDialog({
         />
         <textarea
           className="biomed-input min-h-24 resize-none"
-          placeholder="Description"
+          placeholder={t('projects.description')}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
         />
         <input
           className="biomed-input"
-          placeholder="Tags, comma separated"
+          placeholder={t('projects.tagsCommaSeparated')}
           value={tagInput}
           onChange={(event) => setTagInput(event.target.value)}
         />
@@ -94,7 +96,7 @@ export default function SaveProjectDialog({
           <span className="min-w-0 truncate">
             {entityType.toUpperCase()} / {query}
           </span>
-          <span className="shrink-0">{tags.length} tags</span>
+          <span className="shrink-0">{t('projects.tagsCount', { count: tags.length })}</span>
         </div>
 
         {error && <p className="rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
@@ -104,7 +106,7 @@ export default function SaveProjectDialog({
           disabled={saving}
           className="w-full rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
         >
-          {saving ? 'Saving...' : 'Save Project'}
+          {saving ? t('common.saving') : t('projects.saveProject')}
         </button>
       </form>
     </div>

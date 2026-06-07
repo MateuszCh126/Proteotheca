@@ -1,8 +1,10 @@
 import { LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../context/I18nContext';
 
 export default function UserMenu() {
   const { user, logout, loading } = useAuth();
+  const { t } = useI18n();
   if (!user) return null;
 
   return (
@@ -14,7 +16,7 @@ export default function UserMenu() {
         onClick={() => void logout()}
         disabled={loading}
         className="rounded-full p-1 hover:bg-white/10 disabled:opacity-50"
-        aria-label="Log out"
+        aria-label={t('auth.logOut')}
       >
         <LogOut className="h-3.5 w-3.5" />
       </button>

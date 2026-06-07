@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LiteratureData } from '../../types/literature';
 import PublicationCard from './PublicationCard';
 import { BookOpen } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface LiteraturePanelProps {
   literatureData: LiteratureData | null;
@@ -9,13 +10,14 @@ interface LiteraturePanelProps {
 }
 
 export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData, isLoading }) => {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'ALL' | 'PUBMED' | 'BIORXIV' | 'OPENALEX'>('ALL');
 
   if (isLoading) {
     return (
       <div className="glass-panel p-6 flex flex-col items-center justify-center min-h-[300px]" data-testid="literature-panel">
         <div className="w-8 h-8 border-4 border-accent-blue border-t-transparent rounded-full animate-spin mb-4" />
-        <span className="text-xs font-mono text-accent-blue">FETCHING LITERATURE EVIDENCE...</span>
+        <span className="text-xs font-mono text-accent-blue">{t('literature.fetching')}</span>
       </div>
     );
   }
@@ -26,9 +28,9 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
         <div className="p-3 bg-white/5 rounded-full text-slate-400 mb-3">
           <BookOpen className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-white mb-1 font-outfit">No Literature Evidence Loaded</h3>
+        <h3 className="text-sm font-bold text-white mb-1 font-outfit">{t('literature.noEvidence')}</h3>
         <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-          Search for an entity to synthesize PubMed, bioRxiv, and OpenAlex publication findings.
+          {t('literature.noEvidenceDescription')}
         </p>
       </div>
     );
@@ -59,21 +61,21 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
       <div>
         <div className="flex items-center space-x-2">
           <h2 className="text-lg font-extrabold text-white tracking-tight font-outfit">
-            Scientific Literature
+            {t('literature.title')}
           </h2>
           <span className="text-3xs font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
-            {pubmed.length + biorxiv.length + openalex.length} Publications
+            {t('literature.publications', { count: pubmed.length + biorxiv.length + openalex.length })}
           </span>
         </div>
         <p className="text-3xs text-slate-400 font-mono mt-0.5">
-          Synthesis for query: "{literatureData.query}"
+          {t('literature.synthesisForQuery', { query: literatureData.query })}
         </p>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-white/5 pb-px overflow-x-auto custom-scrollbar">
         {([
-          { id: 'ALL', label: `All (${pubmed.length + biorxiv.length + openalex.length})` },
+          { id: 'ALL', label: t('literature.all', { count: pubmed.length + biorxiv.length + openalex.length }) },
           { id: 'PUBMED', label: `PubMed (${pubmed.length})` },
           { id: 'BIORXIV', label: `bioRxiv (${biorxiv.length})` },
           { id: 'OPENALEX', label: `OpenAlex (${openalex.length})` },
@@ -99,7 +101,7 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
       <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-1">
         {filteredArticles.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-500 italic border border-dashed border-white/5 rounded-xl">
-            No publication articles found for this tab filter.
+            {t('literature.noArticles')}
           </div>
         ) : (
           filteredArticles.map((a) => (

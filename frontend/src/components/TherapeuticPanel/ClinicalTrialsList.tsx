@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { ClinicalTrial } from '../../types/disease';
 import { ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface ClinicalTrialsListProps {
   trials: ClinicalTrial[];
 }
 
 export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }) => {
+  const { t } = useI18n();
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'COMPLETED' | 'RECRUITING'>('ALL');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,7 +62,13 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
         data-testid="trial-status-badge"
         className={`text-3xs uppercase tracking-wider px-2 py-0.5 rounded border font-semibold ${color}`}
       >
-        {status.replace(/_/g, ' ')}
+        {status === 'COMPLETED'
+          ? t('therapeutic.completed')
+          : status === 'RECRUITING'
+            ? t('therapeutic.recruiting')
+            : status === 'ACTIVE_NOT_RECRUITING'
+              ? t('therapeutic.activeNotRecruiting')
+              : status.replace(/_/g, ' ')}
       </span>
     );
   };
@@ -69,7 +77,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold">
-          ClinicalTrials.gov Registry ({filteredAndSortedTrials.length})
+          {t('therapeutic.registry', { count: filteredAndSortedTrials.length })}
         </span>
 
         {/* Filters & Sorting Controls */}
@@ -82,15 +90,15 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
             }}
             className="bg-slate-900/60 border border-white/10 text-slate-300 text-3xs rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
           >
-            <option value="ALL">All Status</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="RECRUITING">Recruiting</option>
+            <option value="ALL">{t('therapeutic.allStatus')}</option>
+            <option value="COMPLETED">{t('therapeutic.completed')}</option>
+            <option value="RECRUITING">{t('therapeutic.recruiting')}</option>
           </select>
 
           <button
             onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
             className="p-1 hover:bg-white/5 border border-white/10 rounded text-slate-300 transition-colors"
-            title="Sort by title"
+            title={t('therapeutic.sortByTitle')}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
           </button>
@@ -100,7 +108,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
       <div className="space-y-2">
         {paginatedTrials.length === 0 ? (
           <div className="p-4 text-center text-xs text-slate-500 italic border border-dashed border-white/5 rounded-xl">
-            No clinical trials found matching the filter.
+            {t('therapeutic.noTrials')}
           </div>
         ) : (
           paginatedTrials.map((trial) => (
@@ -127,7 +135,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1 text-2xs text-slate-400 font-mono">
           <span>
-            Page {currentPage} of {totalPages}
+            {t('common.pageOf', { current: currentPage, total: totalPages })}
           </span>
           <div className="flex items-center space-x-1.5">
             <button

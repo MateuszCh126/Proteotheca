@@ -8,11 +8,13 @@ import MolViewer from './components/MolViewer/MolViewer';
 import StringNetwork from './components/StringNetwork/StringNetwork';
 import AuthDialog from './components/Auth/AuthDialog';
 import UserMenu from './components/Auth/UserMenu';
+import LanguageSwitcher from './components/LanguageSwitcher/LanguageSwitcher';
 import SaveProjectDialog from './components/Projects/SaveProjectDialog';
 import SavedProjectsPanel from './components/Projects/SavedProjectsPanel';
 import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/mockData';
 import { Activity, Database, FolderOpen, LogIn, Save, UserPlus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
+import { useI18n } from './context/I18nContext';
 import type { EntityType } from './api/projects';
 import type { MolViewerColorMode, MolViewerRepresentation } from './components/MolViewer/MolViewer';
 
@@ -24,6 +26,7 @@ const isMolViewerColorMode = (value: unknown): value is MolViewerColorMode =>
 
 export const App: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [loadedGene, setLoadedGene] = useState<any>(null);
   const [loadedVariant, setLoadedVariant] = useState<any>(null);
   const [loadedDisease, setLoadedDisease] = useState<any>(null);
@@ -80,9 +83,9 @@ export const App: React.FC = () => {
   };
 
   const activeQuery =
-    loadedVariant?.variant_id || loadedGene?.symbol || loadedDisease?.disease_name || 'BioMed session';
+    loadedVariant?.variant_id || loadedGene?.symbol || loadedDisease?.disease_name || t('projects.sessionFallback');
   const activeEntityType: EntityType = loadedVariant ? 'variant' : loadedGene ? 'gene' : loadedDisease ? 'disease' : 'mixed';
-  const activeTitle = `${activeQuery} research project`;
+  const activeTitle = t('projects.defaultTitle', { query: activeQuery });
 
   const handleSearch = async (query: string, type: 'gene' | 'variant' | 'disease' | 'unknown') => {
     setIsLoading(true);
@@ -97,7 +100,7 @@ export const App: React.FC = () => {
     if (type === 'gene') {
       const gene = mockGenes[upperQuery];
       if (!gene) {
-        setError(`Gene symbol "${query}" not found in database.`);
+        setError(t('search.errorGeneNotFound', { query }));
         setIsLoading(false);
         return;
       }
@@ -117,7 +120,7 @@ export const App: React.FC = () => {
     } else if (type === 'variant') {
       const variant = mockVariants[lowerQuery];
       if (!variant) {
-        setError(`Variant ID "${query}" not found in database.`);
+        setError(t('search.errorVariantNotFound', { query }));
         setIsLoading(false);
         return;
       }
@@ -145,7 +148,7 @@ export const App: React.FC = () => {
       );
       const disease = key ? mockDiseases[key] : null;
       if (!disease) {
-        setError(`Disease indication "${query}" not found in database.`);
+        setError(t('search.errorDiseaseNotFound', { query }));
         setIsLoading(false);
         return;
       }
@@ -178,7 +181,7 @@ export const App: React.FC = () => {
         }
       }
     } else {
-      setError(`Cannot auto-detect entity type. Try searching "BRAF", "rs113488022", or "Melanoma".`);
+      setError(t('search.errorUnknown'));
     }
     setIsLoading(false);
   };
@@ -201,9 +204,10 @@ export const App: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-3">
+          <LanguageSwitcher />
           <span className="hidden items-center space-x-1.5 rounded-full border border-white/5 bg-white/5 px-2.5 py-1 font-mono text-2xs text-slate-400 sm:flex">
             <Database className="w-3 h-3 text-cyan-400" />
-            <span>Aggregate Mode</span>
+            <span>{t('nav.aggregateMode')}</span>
           </span>
           {user ? (
             <UserMenu />
@@ -212,20 +216,20 @@ export const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setAuthDialogMode('login')}
-                aria-label="Sign in"
+                aria-label={t('nav.signIn')}
                 className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10"
               >
                 <LogIn className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sign in</span>
+                <span className="hidden sm:inline">{t('nav.signIn')}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setAuthDialogMode('register')}
-                aria-label="Register"
+                aria-label={t('nav.register')}
                 className="flex items-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300"
               >
                 <UserPlus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Register</span>
+                <span className="hidden sm:inline">{t('nav.register')}</span>
               </button>
             </div>
           )}
@@ -246,7 +250,7 @@ export const App: React.FC = () => {
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10 sm:flex-none"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
-                Saved Projects
+                {t('projects.savedProjects')}
               </button>
               <button
                 type="button"
@@ -254,14 +258,14 @@ export const App: React.FC = () => {
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 sm:flex-none"
               >
                 <Save className="h-3.5 w-3.5" />
-                Save Project
+                {t('projects.saveProject')}
               </button>
             </div>
           )}
           <div className="text-right hidden md:block">
-            <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">Active Session Target</span>
+            <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">{t('nav.activeSessionTarget')}</span>
             <span className="text-xs font-bold text-white font-outfit mt-0.5 block">
-              {loadedGene ? `${loadedGene.symbol}` : 'None'} {loadedVariant ? `• ${loadedVariant.variant_id}` : ''} {loadedDisease ? `• ${loadedDisease.disease_name}` : ''}
+              {loadedGene ? `${loadedGene.symbol}` : t('nav.none')} {loadedVariant ? `| ${loadedVariant.variant_id}` : ''} {loadedDisease ? `| ${loadedDisease.disease_name}` : ''}
             </span>
           </div>
         </div>
@@ -278,7 +282,7 @@ export const App: React.FC = () => {
               layoutTab === 'visuals' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            3D Visuals & Network
+            {t('layout.visuals')}
           </button>
           <button
             onClick={() => setLayoutTab('data')}
@@ -287,7 +291,7 @@ export const App: React.FC = () => {
               layoutTab === 'data' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Target & Variant Data
+            {t('layout.data')}
           </button>
         </div>
 
@@ -303,7 +307,7 @@ export const App: React.FC = () => {
           <div className={`xl:col-span-6 flex flex-col space-y-5 ${layoutTab === 'visuals' ? 'block' : 'hidden xl:flex'}`}>
             <div className="space-y-2">
               <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
-                Molecular Structure Viewer
+                {t('panel.molecularViewer')}
               </span>
               <MolViewer
                 pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'}
@@ -316,7 +320,7 @@ export const App: React.FC = () => {
 
             <div className="space-y-2">
               <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
-                STRING Interaction Network
+                {t('panel.stringNetwork')}
               </span>
               <StringNetwork geneSymbol={loadedGene?.symbol || 'BRAF'} />
             </div>

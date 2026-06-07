@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { GtexEQTL } from '../../types/variant';
+import { useI18n } from '../../context/I18nContext';
 
 interface GtexHeatmapProps {
   eqtls: GtexEQTL[];
 }
 
 export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
+  const { t } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<GtexEQTL | null>(null);
 
   // Group tissues and genes to form grid axes
@@ -37,15 +39,15 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
         <div className="flex flex-wrap items-center gap-4 text-3xs uppercase tracking-wider font-bold">
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 bg-rose-500 rounded-sm" />
-            <span className="text-slate-300">Up-regulated (NES &gt; 0)</span>
+            <span className="text-slate-300">{t('variant.upRegulated')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 bg-cyan-500 rounded-sm" />
-            <span className="text-slate-300">Down-regulated (NES &lt; 0)</span>
+            <span className="text-slate-300">{t('variant.downRegulated')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 border border-dashed border-white/20 bg-stripes-overlay rounded-sm" />
-            <span className="text-slate-400">Non-significant (p &ge; 0.05)</span>
+            <span className="text-slate-400">{t('variant.nonSignificant')}</span>
           </div>
         </div>
       </div>
@@ -59,7 +61,7 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
           }}
         >
           {/* Header Row */}
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider py-1 select-none">Tissue</div>
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider py-1 select-none">{t('variant.tissue')}</div>
           {uniqueGenes.map((gene) => (
             <div 
               key={gene} 
@@ -128,18 +130,18 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
             <div>
               <span className="font-bold text-white block font-outfit">{hoveredCell.tissue}</span>
               <span className="text-3xs text-slate-400 uppercase tracking-wider block mt-0.5">
-                Target Gene: <strong className="text-slate-200">{hoveredCell.gene_symbol}</strong>
+                {t('variant.targetGene')} <strong className="text-slate-200">{hoveredCell.gene_symbol}</strong>
               </span>
             </div>
             <div className="flex gap-4">
               <div className="text-right">
-                <span className="text-3xs text-slate-400 block mb-0.5">Normalized Effect Size (NES)</span>
+                <span className="text-3xs text-slate-400 block mb-0.5">{t('variant.normalizedEffectSize')}</span>
                 <span className={`font-mono font-bold ${hoveredCell.nes >= 0 ? 'text-rose-400' : 'text-cyan-400'}`}>
                   {hoveredCell.nes > 0 ? '+' : ''}{hoveredCell.nes.toFixed(4)}
                 </span>
               </div>
               <div className="text-right border-l border-white/10 pl-4">
-                <span className="text-3xs text-slate-400 block mb-0.5">Significance (p-value)</span>
+                <span className="text-3xs text-slate-400 block mb-0.5">{t('variant.significancePValue')}</span>
                 <span className={`font-mono font-bold ${hoveredCell.p_value < 0.05 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {hoveredCell.p_value.toExponential(3)}
                 </span>
@@ -147,7 +149,7 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
             </div>
           </>
         ) : (
-          <span className="text-slate-400 italic font-outfit">Hover over a heatmap cell to inspect specific tissue eQTL metrics.</span>
+          <span className="text-slate-400 italic font-outfit">{t('variant.hoverHeatmap')}</span>
         )}
       </div>
     </div>

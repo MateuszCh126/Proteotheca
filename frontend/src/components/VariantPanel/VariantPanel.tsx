@@ -4,6 +4,7 @@ import ClinVarCard from './ClinVarCard';
 import AlleleFreqChart from './AlleleFreqChart';
 import GtexHeatmap from './GtexHeatmap';
 import { GitBranch, Activity, Eye, Tag } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface VariantPanelProps {
   variantData: VariantData | null;
@@ -11,13 +12,14 @@ interface VariantPanelProps {
 }
 
 export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoading }) => {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'clinvar' | 'gnomad' | 'gtex'>('clinvar');
 
   if (isLoading) {
     return (
       <div className="glass-panel p-6 flex flex-col items-center justify-center min-h-[300px]" data-testid="variant-panel">
         <div className="w-8 h-8 border-4 border-accent-violet border-t-transparent rounded-full animate-spin mb-4" />
-        <span className="text-xs font-mono text-accent-violet">FETCHING VARIANT DATA...</span>
+        <span className="text-xs font-mono text-accent-violet">{t('variant.fetching')}</span>
       </div>
     );
   }
@@ -28,9 +30,9 @@ export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoadi
         <div className="p-3 bg-white/5 rounded-full text-slate-400 mb-3">
           <GitBranch className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-white mb-1 font-outfit">No Variant Loaded</h3>
+        <h3 className="text-sm font-bold text-white mb-1 font-outfit">{t('variant.noVariant')}</h3>
         <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-          Search for an rsID (e.g. <strong className="text-violet-400">rs113488022</strong>) or chromosomal coordinates to inspect functional impact details.
+          {t('variant.noVariantDescription', { example: 'rs113488022' })}
         </p>
       </div>
     );
@@ -45,11 +47,11 @@ export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoadi
             {variantData.variant_id}
           </h2>
           <span className="text-3xs font-mono bg-violet-500/10 text-violet-400 px-1.5 py-0.5 rounded border border-violet-500/20">
-            Variant
+            {t('entity.variant')}
           </span>
         </div>
         <p className="text-3xs text-slate-400 font-mono mt-0.5">
-          ClinVar Pathogenicity: {variantData.clinvar.pathogenicity}
+          {t('variant.clinvarPathogenicity', { value: variantData.clinvar.pathogenicity })}
         </p>
       </div>
 
@@ -58,9 +60,9 @@ export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoadi
         {(['clinvar', 'gnomad', 'gtex'] as const).map((tab) => {
           const isActive = activeTab === tab;
           let label = '';
-          if (tab === 'clinvar') label = 'ClinVar';
-          if (tab === 'gnomad') label = 'gnomAD Frequency';
-          if (tab === 'gtex') label = 'GTEx eQTLs';
+          if (tab === 'clinvar') label = t('variant.clinvar');
+          if (tab === 'gnomad') label = t('variant.gnomadFrequency');
+          if (tab === 'gtex') label = t('variant.gtexEqtls');
 
           return (
             <button

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearch, SuggestionItem } from '../../hooks/useSearch';
 import SuggestionList from './SuggestionList';
 import { Search, Loader2 } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 export interface SearchBarProps {
   onSearch: (query: string, detectedType: 'gene' | 'variant' | 'disease' | 'unknown') => void;
@@ -10,6 +11,7 @@ export interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading, error }) => {
+  const { t } = useI18n();
   const { query, setQuery, suggestions, detectedType } = useSearch();
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
@@ -92,7 +94,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading, error
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search Gene, Variant (rsID), or Disease..."
+          placeholder={t('search.placeholder')}
           className="bg-transparent border-none outline-none text-white w-full text-sm placeholder-slate-500"
           data-testid="search-input"
         />
@@ -115,7 +117,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading, error
           {isLoading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
           ) : (
-            'Analyze'
+            t('search.analyze')
           )}
         </button>
       </div>

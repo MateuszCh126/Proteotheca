@@ -1,12 +1,14 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { OpenFdaData, AdverseEventTerm, DemographicData } from '../../types/disease';
+import { useI18n } from '../../context/I18nContext';
 
 interface OpenfdaAdverseEventsProps {
   data: OpenFdaData;
 }
 
 export const FdaEventsChart: React.FC<{ events: AdverseEventTerm[] }> = ({ events }) => {
+  const { t } = useI18n();
   const chartData = events.slice(0, 8); // Display top 8 event reactions
 
   const getGradientColor = (index: number) => {
@@ -45,7 +47,7 @@ export const FdaEventsChart: React.FC<{ events: AdverseEventTerm[] }> = ({ event
                   <div className="glass-panel p-2 rounded-lg border border-white/10 bg-slate-950/90 backdrop-blur-md text-3xs">
                     <p className="font-bold text-white uppercase font-outfit">{item.term}</p>
                     <p className="text-orange-400 mt-1">
-                      Reports: <span className="font-mono">{item.count.toLocaleString()}</span>
+                      {t('common.reports')}: <span className="font-mono">{item.count.toLocaleString()}</span>
                     </p>
                   </div>
                 );
@@ -72,6 +74,8 @@ interface DemographicsChartProps {
 }
 
 export const DemographicsDonutChart: React.FC<DemographicsChartProps> = ({ data, title, palette, testId }) => {
+  const { t } = useI18n();
+
   return (
     <div className="flex flex-col items-center w-full h-48" data-testid={testId}>
       <h4 className="text-3xs font-semibold text-slate-400 uppercase tracking-wider mb-1 font-outfit">{title}</h4>
@@ -98,7 +102,7 @@ export const DemographicsDonutChart: React.FC<DemographicsChartProps> = ({ data,
                   <div className="glass-panel p-2 rounded-lg border border-white/10 bg-slate-950/90 backdrop-blur-md text-3xs">
                     <span className="font-semibold text-white font-outfit">{item.name}</span>
                     <span className="text-slate-300 font-mono block mt-0.5">
-                      Reports: {Number(item.value).toLocaleString()}
+                      {t('common.reports')}: {Number(item.value).toLocaleString()}
                     </span>
                   </div>
                 );
@@ -120,6 +124,7 @@ export const DemographicsDonutChart: React.FC<DemographicsChartProps> = ({ data,
 };
 
 export const OpenfdaAdverseEvents: React.FC<OpenfdaAdverseEventsProps> = ({ data }) => {
+  const { t } = useI18n();
   const sexPalette = ['hsl(200, 85%, 55%)', 'hsl(280, 70%, 55%)', 'hsl(240, 5%, 50%)'];
   const agePalette = ['hsl(142, 70%, 45%)', 'hsl(180, 80%, 45%)', 'hsl(225, 75%, 55%)', 'hsl(15, 85%, 55%)'];
 
@@ -128,10 +133,10 @@ export const OpenfdaAdverseEvents: React.FC<OpenfdaAdverseEventsProps> = ({ data
       <div>
         <div className="flex justify-between items-center mb-2">
           <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
-            FDA ADE Symptom Frequency ({data.active_substance})
+            {t('therapeutic.fdaSymptomFrequency', { substance: data.active_substance })}
           </span>
           <span className="text-3xs text-slate-500 font-mono">
-            Total reports: {data.total_reports.toLocaleString()}
+            {t('common.totalReports', { count: data.total_reports.toLocaleString() })}
           </span>
         </div>
         <FdaEventsChart events={data.events} />
@@ -140,13 +145,13 @@ export const OpenfdaAdverseEvents: React.FC<OpenfdaAdverseEventsProps> = ({ data
       <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
         <DemographicsDonutChart 
           data={data.sex_breakdown} 
-          title="Sex Breakdown" 
+          title={t('therapeutic.sexBreakdown')} 
           palette={sexPalette} 
           testId="fda-demographics-sex" 
         />
         <DemographicsDonutChart 
           data={data.age_breakdown} 
-          title="Age Breakdown" 
+          title={t('therapeutic.ageBreakdown')} 
           palette={agePalette} 
           testId="fda-demographics-age" 
         />

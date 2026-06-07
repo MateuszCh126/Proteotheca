@@ -1,0 +1,134 @@
+import { useEffect, useState } from 'react';
+import { Archive, FolderOpen, RefreshCw, X } from 'lucide-react';
+import { projectsApi, type SavedProject } from '../../api/projects';
+
+interface SavedProjectsPanelProps {
+  open: boolean;
+  onClose: () => void;
+  onLoad: (state: Record<string, unknown>) => void;
+}
+
+export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProjectsPanelProps) {
+  const [projects, setProjects] = useState<SavedProject[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [actingProjectId, setActingProjectId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setProjects(await projectsApi.list());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      void loadProjects();
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const loadProject = async (project: SavedProject) => {
+    setActingProjectId(project.id);
+    setError(null);
+    try {
+      const fullProject = await projectsApi.get(project.id);
+      const state = fullProject.latest_snapshot?.state;
+      if (!state) {
+        setError('This project does not have a saved snapshot.');
+        return;
+      }
+      onLoad(state);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load project');
+    } finally {
+      setActingProjectId(null);
+    }
+  };
+
+  const archiveProject = async (project: SavedProject) => {
+    setActingProjectId(project.id);
+    setError(null);
+    try {
+      await projectsApi.archive(project.id);
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not archive project');
+    } finally {
+      setActingProjectId(null);
+    }
+  };
+
+  return (
+    <aside className="fixed right-4 top-20 z-[90] w-[min(420px,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-hidden border border-cyan-400/20 p-4 shadow-2xl glass-panel">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
+          <FolderOpen className="h-4 w-4 shrink-0 text-cyan-300" />
+          <span className="truncate">Saved Projects</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={() => void loadProjects()} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Refresh projects">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="Close projects panel">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {loading && <p className="py-4 text-xs text-slate-400">Loading saved research...</p>}
+      {error && <p className="mt-3 rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
+
+      <div className="custom-scrollbar max-h-[70vh] overflow-y-auto divide-y divide-white/10">
+        {!loading && projects.length === 0 && <p className="py-4 text-xs text-slate-400">No saved projects yet.</p>}
+
+        {projects.map((project) => (
+          <article key={project.id} className="space-y-2 py-3">
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-bold text-white">{project.title}</h3>
+              <p className="truncate text-[0.65rem] text-slate-400">
+                {project.entity_type.toUpperCase()} / {project.query}
+              </p>
+            </div>
+            {project.description && <p className="line-clamp-2 text-xs text-slate-300">{project.description}</p>}
+            {project.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {project.tags.map((tag) => (
+                  <span key={tag} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-0.5 text-[0.6rem] text-cyan-200">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void loadProject(project)}
+                disabled={actingProjectId === project.id}
+                className="rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
+              >
+                Load
+              </button>
+              <button
+                type="button"
+                onClick={() => void archiveProject(project)}
+                disabled={actingProjectId === project.id}
+                className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/10 disabled:opacity-60"
+              >
+                <Archive className="mr-1 inline-block h-3.5 w-3.5" />
+                Archive
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </aside>
+  );
+}

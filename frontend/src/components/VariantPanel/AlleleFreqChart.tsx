@@ -33,7 +33,7 @@ export const GlobalFreqGauge: React.FC<{ frequency: number }> = ({ frequency }) 
           endAngle={0}
         >
           <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-          <RadialBar background clockWise dataKey="value" cornerRadius={5} />
+          <RadialBar background dataKey="value" cornerRadius={5} />
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/4 text-center">

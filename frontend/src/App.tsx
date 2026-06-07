@@ -6,16 +6,26 @@ import TherapeuticPanel from './components/TherapeuticPanel/TherapeuticPanel';
 import LiteraturePanel from './components/LiteraturePanel/LiteraturePanel';
 import MolViewer from './components/MolViewer/MolViewer';
 import StringNetwork from './components/StringNetwork/StringNetwork';
+import AuthDialog from './components/Auth/AuthDialog';
+import UserMenu from './components/Auth/UserMenu';
+import SaveProjectDialog from './components/Projects/SaveProjectDialog';
+import SavedProjectsPanel from './components/Projects/SavedProjectsPanel';
 import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/mockData';
-import { Activity, Layers, Database, Sparkles } from 'lucide-react';
+import { Activity, Database, FolderOpen, LogIn, Save, UserPlus } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import type { EntityType } from './api/projects';
 
 export const App: React.FC = () => {
+  const { user } = useAuth();
   const [loadedGene, setLoadedGene] = useState<any>(null);
   const [loadedVariant, setLoadedVariant] = useState<any>(null);
   const [loadedDisease, setLoadedDisease] = useState<any>(null);
   const [loadedLiterature, setLoadedLiterature] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register' | null>(null);
+  const [showSaveProject, setShowSaveProject] = useState(false);
+  const [showSavedProjects, setShowSavedProjects] = useState(false);
 
   // Layout Tab selection for small/standard screens
   const [layoutTab, setLayoutTab] = useState<'visuals' | 'data'>('visuals');
@@ -27,6 +37,26 @@ export const App: React.FC = () => {
     setLoadedDisease(mockDiseases.Melanoma);
     setLoadedLiterature(mockLiterature.BRAF);
   }, []);
+
+  const currentProjectState = {
+    gene: loadedGene,
+    variant: loadedVariant,
+    disease: loadedDisease,
+    literature: loadedLiterature,
+  };
+
+  const handleLoadProjectState = (state: Record<string, unknown>) => {
+    setLoadedGene(state.gene ?? null);
+    setLoadedVariant(state.variant ?? null);
+    setLoadedDisease(state.disease ?? null);
+    setLoadedLiterature(state.literature ?? null);
+    setError(null);
+  };
+
+  const activeQuery =
+    loadedVariant?.variant_id || loadedGene?.symbol || loadedDisease?.disease_name || 'BioMed session';
+  const activeEntityType: EntityType = loadedVariant ? 'variant' : loadedGene ? 'gene' : loadedDisease ? 'disease' : 'mixed';
+  const activeTitle = `${activeQuery} research project`;
 
   const handleSearch = async (query: string, type: 'gene' | 'variant' | 'disease' | 'unknown') => {
     setIsLoading(true);
@@ -144,11 +174,35 @@ export const App: React.FC = () => {
           </h1>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <span className="text-2xs text-slate-400 font-mono flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="hidden items-center space-x-1.5 rounded-full border border-white/5 bg-white/5 px-2.5 py-1 font-mono text-2xs text-slate-400 sm:flex">
             <Database className="w-3 h-3 text-cyan-400" />
             <span>Aggregate Mode</span>
           </span>
+          {user ? (
+            <UserMenu />
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAuthDialogMode('login')}
+                aria-label="Sign in"
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sign in</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthDialogMode('register')}
+                aria-label="Register"
+                className="flex items-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Register</span>
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -158,6 +212,26 @@ export const App: React.FC = () => {
           <div className="w-full md:max-w-xl">
             <SearchBar onSearch={handleSearch} isLoading={isLoading} error={error} />
           </div>
+          {user && (
+            <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSavedProjects(true)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10 sm:flex-none"
+              >
+                <FolderOpen className="h-3.5 w-3.5" />
+                Saved Projects
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSaveProject(true)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 sm:flex-none"
+              >
+                <Save className="h-3.5 w-3.5" />
+                Save Project
+              </button>
+            </div>
+          )}
           <div className="text-right hidden md:block">
             <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">Active Session Target</span>
             <span className="text-xs font-bold text-white font-outfit mt-0.5 block">
@@ -223,6 +297,23 @@ export const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {authDialogMode && <AuthDialog mode={authDialogMode} onClose={() => setAuthDialogMode(null)} />}
+      {showSaveProject && (
+        <SaveProjectDialog
+          state={currentProjectState}
+          defaultTitle={activeTitle}
+          entityType={activeEntityType}
+          query={activeQuery}
+          onClose={() => setShowSaveProject(false)}
+          onSaved={() => setShowSavedProjects(true)}
+        />
+      )}
+      <SavedProjectsPanel
+        open={showSavedProjects}
+        onClose={() => setShowSavedProjects(false)}
+        onLoad={handleLoadProjectState}
+      />
     </div>
   );
 };

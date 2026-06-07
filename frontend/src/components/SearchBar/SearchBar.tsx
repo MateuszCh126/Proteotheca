@@ -104,7 +104,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading, error
             data-testid="search-detected-badge"
             className={`text-3xs uppercase tracking-wider px-2.5 py-1 rounded border mr-2 shrink-0 font-bold ${badgeColor}`}
           >
-            {detectedType}
+            {t(`entity.${detectedType}` as const)}
           </span>
         )}
 

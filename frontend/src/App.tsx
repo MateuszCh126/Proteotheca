@@ -148,7 +148,7 @@ export const App: React.FC = () => {
       );
       const disease = key ? mockDiseases[key] : null;
       if (!disease) {
-        setError(t('search.errorDiseaseNotFound', { query }));
+        setError(t('search.errorDiseaseRecognizedButMissing', { query, examples: Object.keys(mockDiseases).join(', ') }));
         setIsLoading(false);
         return;
       }

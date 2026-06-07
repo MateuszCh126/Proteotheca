@@ -14,6 +14,13 @@ import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/moc
 import { Activity, Database, FolderOpen, LogIn, Save, UserPlus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import type { EntityType } from './api/projects';
+import type { MolViewerColorMode, MolViewerRepresentation } from './components/MolViewer/MolViewer';
+
+const isLayoutTab = (value: unknown): value is 'visuals' | 'data' => value === 'visuals' || value === 'data';
+const isMolViewerRepresentation = (value: unknown): value is MolViewerRepresentation =>
+  value === 'cartoon' || value === 'surface' || value === 'spheres';
+const isMolViewerColorMode = (value: unknown): value is MolViewerColorMode =>
+  value === 'plddt' || value === 'chain' || value === 'hydrophobicity';
 
 export const App: React.FC = () => {
   const { user } = useAuth();
@@ -29,6 +36,8 @@ export const App: React.FC = () => {
 
   // Layout Tab selection for small/standard screens
   const [layoutTab, setLayoutTab] = useState<'visuals' | 'data'>('visuals');
+  const [molRepresentation, setMolRepresentation] = useState<MolViewerRepresentation>('cartoon');
+  const [molColorMode, setMolColorMode] = useState<MolViewerColorMode>('plddt');
 
   // Pre-load default state for demonstration and testing (BRAF V600E / Melanoma discovery)
   useEffect(() => {
@@ -43,13 +52,30 @@ export const App: React.FC = () => {
     variant: loadedVariant,
     disease: loadedDisease,
     literature: loadedLiterature,
+    layoutTab,
+    molViewer: {
+      representation: molRepresentation,
+      colorMode: molColorMode,
+    },
   };
 
   const handleLoadProjectState = (state: Record<string, unknown>) => {
+    const molViewerState =
+      state.molViewer && typeof state.molViewer === 'object' ? (state.molViewer as Record<string, unknown>) : null;
+
     setLoadedGene(state.gene ?? null);
     setLoadedVariant(state.variant ?? null);
     setLoadedDisease(state.disease ?? null);
     setLoadedLiterature(state.literature ?? null);
+    if (isLayoutTab(state.layoutTab)) {
+      setLayoutTab(state.layoutTab);
+    }
+    if (molViewerState && isMolViewerRepresentation(molViewerState.representation)) {
+      setMolRepresentation(molViewerState.representation);
+    }
+    if (molViewerState && isMolViewerColorMode(molViewerState.colorMode)) {
+      setMolColorMode(molViewerState.colorMode);
+    }
     setError(null);
   };
 
@@ -279,7 +305,13 @@ export const App: React.FC = () => {
               <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
                 WebGL Molecular Viewer
               </span>
-              <MolViewer pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'} />
+              <MolViewer
+                pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'}
+                representation={molRepresentation}
+                colorMode={molColorMode}
+                onRepresentationChange={setMolRepresentation}
+                onColorModeChange={setMolColorMode}
+              />
             </div>
 
             <div className="space-y-2">

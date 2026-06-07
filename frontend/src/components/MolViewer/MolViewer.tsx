@@ -1,15 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Play, ZoomIn, ZoomOut, Maximize2, Compass, Layers, Loader2 } from 'lucide-react';
 
+export type MolViewerRepresentation = 'cartoon' | 'surface' | 'spheres';
+export type MolViewerColorMode = 'plddt' | 'chain' | 'hydrophobicity';
+
 interface MolViewerProps {
   pdbId?: string;
+  representation?: MolViewerRepresentation;
+  colorMode?: MolViewerColorMode;
+  onRepresentationChange?: (representation: MolViewerRepresentation) => void;
+  onColorModeChange?: (colorMode: MolViewerColorMode) => void;
 }
 
-export const MolViewer: React.FC<MolViewerProps> = ({ pdbId = '1UWH' }) => {
+export const MolViewer: React.FC<MolViewerProps> = ({
+  pdbId = '1UWH',
+  representation: controlledRepresentation,
+  colorMode: controlledColorMode,
+  onRepresentationChange,
+  onColorModeChange,
+}) => {
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [representation, setRepresentation] = useState<'cartoon' | 'surface' | 'spheres'>('cartoon');
-  const [colorMode, setColorMode] = useState<'plddt' | 'chain' | 'hydrophobicity'>('plddt');
+  const [internalRepresentation, setInternalRepresentation] = useState<MolViewerRepresentation>('cartoon');
+  const [internalColorMode, setInternalColorMode] = useState<MolViewerColorMode>('plddt');
+  const representation = controlledRepresentation ?? internalRepresentation;
+  const colorMode = controlledColorMode ?? internalColorMode;
 
   useEffect(() => {
     // Reset active state when pdbId changes to ensure user activates it deliberately
@@ -25,6 +40,16 @@ export const MolViewer: React.FC<MolViewerProps> = ({ pdbId = '1UWH' }) => {
       setIsLoading(false);
     }, 800);
     return () => clearTimeout(timer);
+  };
+
+  const handleRepresentationChange = (nextRepresentation: MolViewerRepresentation) => {
+    setInternalRepresentation(nextRepresentation);
+    onRepresentationChange?.(nextRepresentation);
+  };
+
+  const handleColorModeChange = (nextColorMode: MolViewerColorMode) => {
+    setInternalColorMode(nextColorMode);
+    onColorModeChange?.(nextColorMode);
   };
 
   return (
@@ -106,7 +131,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({ pdbId = '1UWH' }) => {
             {(['cartoon', 'surface', 'spheres'] as const).map((rep) => (
               <button
                 key={rep}
-                onClick={() => setRepresentation(rep)}
+                onClick={() => handleRepresentationChange(rep)}
                 className={`px-2 py-0.5 rounded text-3xs font-extrabold uppercase transition-all ${
                   representation === rep
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
@@ -125,7 +150,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({ pdbId = '1UWH' }) => {
             {(['plddt', 'chain'] as const).map((mode) => (
               <button
                 key={mode}
-                onClick={() => setColorMode(mode)}
+                onClick={() => handleColorModeChange(mode)}
                 className={`px-2 py-0.5 rounded text-3xs font-extrabold uppercase transition-all ${
                   colorMode === mode
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'

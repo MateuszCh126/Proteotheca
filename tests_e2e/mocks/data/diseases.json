@@ -1,0 +1,106 @@
+{
+  "Melanoma": {
+    "disease_name": "Melanoma",
+    "opentargets": {
+      "associated_genes": [
+        { "symbol": "BRAF", "score": 0.95 },
+        { "symbol": "NRAS", "score": 0.88 },
+        { "symbol": "CDKN2A", "score": 0.81 },
+        { "symbol": "KIT", "score": 0.65 }
+      ]
+    },
+    "chembl": {
+      "active_compounds": [
+        { "chembl_id": "CHEMBL2103830", "name": "DABRAFENIB", "ic50_nm": 0.8 },
+        { "chembl_id": "CHEMBL1229594", "name": "VEMURAFENIB", "ic50_nm": 1.2 },
+        { "chembl_id": "CHEMBL2107827", "name": "TRAMETINIB", "ic50_nm": 0.92 },
+        { "chembl_id": "CHEMBL3545062", "name": "COBIMETINIB", "ic50_nm": 4.5 },
+        { "chembl_id": "CHEMBL4297123", "name": "ENCORAFENIB", "ic50_nm": 0.35 }
+      ]
+    },
+    "clinical_trials": {
+      "trial_count": 142,
+      "trials": [
+        { "nct_id": "NCT01227889", "title": "Study of Dabrafenib in Patients With BRAF Mutation-Positive Melanoma", "status": "COMPLETED" },
+        { "nct_id": "NCT02224781", "title": "Dabrafenib Plus Trametinib in BRAF V600 mutant Melanoma Brain Metastases", "status": "COMPLETED" },
+        { "nct_id": "NCT04516395", "title": "A Study of Pembrolizumab with Dabrafenib and Trametinib in Advanced Melanoma", "status": "RECRUITING" },
+        { "nct_id": "NCT03820986", "title": "Encorafenib and Binimetinib in Patients With BRAF V600E Mutant Melanoma", "status": "ACTIVE_NOT_RECRUITING" },
+        { "nct_id": "NCT05001243", "title": "A Trial of Adjuvant Targeted Therapy in BRAF-mutant Stage II Melanoma", "status": "RECRUITING" }
+      ]
+    },
+    "openfda": {
+      "active_substance": "DABRAFENIB",
+      "total_reports": 18520,
+      "events": [
+        { "term": "Pyrexia", "count": 4210 },
+        { "term": "Fatigue", "count": 3120 },
+        { "term": "Hyperkeratosis", "count": 2850 },
+        { "term": "Headache", "count": 2450 },
+        { "term": "Nausea", "count": 2100 },
+        { "term": "Diarrhoea", "count": 1850 },
+        { "term": "Arthralgia", "count": 1750 },
+        { "term": "Alopecia", "count": 1420 },
+        { "term": "Rash", "count": 1200 },
+        { "term": "Papilloma skin", "count": 880 }
+      ],
+      "sex_breakdown": [
+        { "name": "Male", "value": 9850 },
+        { "name": "Female", "value": 8430 },
+        { "name": "Unknown", "value": 240 }
+      ],
+      "age_breakdown": [
+        { "name": "18-44 years", "value": 2450 },
+        { "name": "45-64 years", "value": 7120 },
+        { "name": "65-74 years", "value": 5850 },
+        { "name": "75+ years", "value": 3100 }
+      ]
+    }
+  },
+  "Breast Cancer": {
+    "disease_name": "Breast Cancer",
+    "opentargets": {
+      "associated_genes": [
+        { "symbol": "BRCA1", "score": 0.98 },
+        { "symbol": "BRCA2", "score": 0.96 },
+        { "symbol": "TP53", "score": 0.75 },
+        { "symbol": "PIK3CA", "score": 0.82 }
+      ]
+    },
+    "chembl": {
+      "active_compounds": [
+        { "chembl_id": "CHEMBL150", "name": "TAMOXIFEN", "ic50_nm": 15.0 },
+        { "chembl_id": "CHEMBL1201585", "name": "TRASTUZUMAB", "ic50_nm": 2.5 },
+        { "chembl_id": "CHEMBL3137344", "name": "PALBOCICLIB", "ic50_nm": 1.1 }
+      ]
+    },
+    "clinical_trials": {
+      "trial_count": 245,
+      "trials": [
+        { "nct_id": "NCT00003000", "title": "Study of Tamoxifen vs Trastuzumab in Breast Cancer", "status": "COMPLETED" },
+        { "nct_id": "NCT01234567", "title": "Palbociclib Combination Therapy in HER2-Negative Breast Cancer", "status": "RECRUITING" }
+      ]
+    },
+    "openfda": {
+      "active_substance": "TAMOXIFEN",
+      "total_reports": 9250,
+      "events": [
+        { "term": "Hot flushes", "count": 1850 },
+        { "term": "Nausea", "count": 1120 },
+        { "term": "Fatigue", "count": 980 },
+        { "term": "Joint pain", "count": 850 }
+      ],
+      "sex_breakdown": [
+        { "name": "Female", "value": 9100 },
+        { "name": "Male", "value": 120 },
+        { "name": "Unknown", "value": 30 }
+      ],
+      "age_breakdown": [
+        { "name": "18-44 years", "value": 1100 },
+        { "name": "45-64 years", "value": 4890 },
+        { "name": "65-74 years", "value": 2450 },
+        { "name": "75+ years", "value": 810 }
+      ]
+    }
+  },
+  "invalid_disease": null
+}

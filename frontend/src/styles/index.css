@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-base: 240 15% 4%;
+    --bg-panel: 240 10% 8%;
+    
+    --accent-cyan: 180 80% 45%;
+    --accent-blue: 225 75% 55%;
+    --accent-violet: 280 70% 55%;
+    --accent-warning: 15 85% 55%;
+    --accent-success: 142 70% 45%;
+    
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-[#fcfcfc] font-sans antialiased overflow-x-hidden min-h-screen;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(225, 75%, 55%, 0.08) 0, transparent 40%),
+      radial-gradient(at 100% 0%, hsla(180, 80%, 45%, 0.08) 0, transparent 40%),
+      radial-gradient(at 50% 100%, hsla(280, 70%, 55%, 0.05) 0, transparent 50%);
+  }
+}
+
+@layer components {
+  /* Frosted Glassmorphic Panel Component */
+  .glass-panel {
+    @apply bg-panel/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-glass-glow transition-all duration-300;
+  }
+  
+  .glass-panel-hover {
+    @apply hover:bg-panel/60 hover:border-white/15 hover:shadow-accent-cyan/10;
+  }
+
+  /* Glass Input Element */
+  .glass-input {
+    @apply bg-black/40 border border-white/10 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 
+           focus:outline-none focus:ring-1 focus:ring-accent-cyan/50 focus:border-accent-cyan/50
+           transition-all duration-200 backdrop-blur-md;
+  }
+
+  /* Custom Scrollbar for Scientific Panels */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+
+  /* Non-significant overlay hashing pattern */
+  .bg-stripes-overlay {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.05) 4px,
+      rgba(255, 255, 255, 0.05) 8px
+    );
+  }
+}

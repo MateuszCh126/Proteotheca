@@ -1,0 +1,33 @@
+{
+  "rs113488022": {
+    "variant_id": "rs113488022",
+    "clinvar": {
+      "pathogenicity": "Pathogenic",
+      "significance": "Somatic variation associated with Vemurafenib/Dabrafenib response, cancer susceptibility",
+      "review_status": "criteria provided, single submitter"
+    },
+    "gnomad": {
+      "allele_frequency": 0.0012,
+      "homozygote_count": 0,
+      "populations": [
+        { "pop": "European (Non-Finnish)", "freq": 0.0021 },
+        { "pop": "African/African-American", "freq": 0.0001 },
+        { "pop": "East Asian", "freq": 0.0003 },
+        { "pop": "Latino/Admixed American", "freq": 0.0008 },
+        { "pop": "South Asian", "freq": 0.0002 },
+        { "pop": "Ashkenazi Jewish", "freq": 0.0005 }
+      ]
+    },
+    "gtex": {
+      "eqtls": [
+        { "tissue": "Skin - Sun Exposed (Lower leg)", "gene_symbol": "BRAF", "p_value": 1.2e-8, "nes": 0.45 },
+        { "tissue": "Skin - Not Sun Exposed (Suprapubic)", "gene_symbol": "BRAF", "p_value": 3.4e-7, "nes": 0.38 },
+        { "tissue": "Thyroid", "gene_symbol": "BRAF", "p_value": 1.5e-5, "nes": 0.22 },
+        { "tissue": "Whole Blood", "gene_symbol": "BRAF", "p_value": 0.12, "nes": 0.05 },
+        { "tissue": "Muscle - Skeletal", "gene_symbol": "BRAF", "p_value": 0.45, "nes": -0.02 },
+        { "tissue": "Colon - Transverse", "gene_symbol": "BRAF", "p_value": 0.004, "nes": -0.18 }
+      ]
+    }
+  },
+  "invalid_variant": null
+}

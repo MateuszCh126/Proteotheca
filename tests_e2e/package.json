@@ -1,0 +1,16 @@
+{
+  "name": "biomed-explorer-e2e",
+  "version": "1.0.0",
+  "description": "E2E testing suite for BioMed Explorer",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.24"
+  }
+}

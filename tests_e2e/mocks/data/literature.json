@@ -1,0 +1,110 @@
+{
+  "BRAF": {
+    "query": "BRAF",
+    "pubmed": [
+      {
+        "pmid": "31234567",
+        "title": "Mechanisms of Resistance to BRAF Inhibitors in Melanoma",
+        "authors": "Smith J, Doe A, Patel M",
+        "journal": "Nature Reviews Cancer",
+        "pub_date": "2020-05-12",
+        "abstract": "In patients with BRAF V600 mutations, resistance to targeted BRAF inhibitors occurs frequently via reactivating the MAPK pathway. We explore genomic alterations and feedback loops that limit overall clinical efficacy. Combining BRAF and MEK inhibitors delays but does not eliminate resistance.",
+        "doi": "10.1038/nrc.2020.12"
+      },
+      {
+        "pmid": "32456789",
+        "title": "Targeted Therapy in BRAF-Mutant Colorectal Cancer",
+        "authors": "Kopp W, Vande W, Taylor S",
+        "journal": "Journal of Clinical Oncology",
+        "pub_date": "2021-08-25",
+        "abstract": "Colorectal cancers harboring the BRAF V600E mutation display high resistance to standard EGFR and BRAF monotherapies. We evaluate triple combinations blocking BRAF, EGFR, and MEK, demonstrating improved progression-free survival over standard chemotherapy.",
+        "doi": "10.1200/JCO.2021.39.4568"
+      }
+    ],
+    "biorxiv": [
+      {
+        "doi": "10.1101/2021.01.01.123456",
+        "title": "Single-cell Transcriptomics Reveals Adaptive Rewiring Under BRAF Inhibition",
+        "authors": "Johnson R, Lee K, Zhao X",
+        "pub_date": "2021-01-02",
+        "abstract": "Applying single-cell RNA sequencing to BRAF-mutated melanoma cells under Vemurafenib treatment demonstrates rapid upregulation of neural crest stem cell markers. This transcriptionally plastic population drives transient drug tolerance before genetic resistance emerges."
+      }
+    ],
+    "openalex": [
+      {
+        "id": "https://openalex.org/W3012345678",
+        "title": "A Global Registry Study on BRAF Alterations in Rare Tumors",
+        "authors": "Gomez L, Kim S, Dupont L",
+        "pub_date": "2019-11-20",
+        "abstract": "We analyze BRAF V600E and non-V600E mutations across non-small cell lung cancer, anaplastic thyroid cancer, and cholangiocarcinoma. High response rates to Dabrafenib combination therapies suggest tissue-agnostic utility for BRAF inhibitors.",
+        "doi": "10.1158/2159-8290.CD-19-0345"
+      }
+    ]
+  },
+  "EGFR": {
+    "query": "EGFR",
+    "pubmed": [
+      {
+        "pmid": "29876543",
+        "title": "Osimertinib in Untreated EGFR-Mutated Advanced Non-Small-Cell Lung Cancer",
+        "authors": "Soria J, Ohe Y, Vansteenkiste J",
+        "journal": "New England Journal of Medicine",
+        "pub_date": "2018-01-11",
+        "abstract": "In this phase 3 trial, osimertinib showed efficacy superior to that of standard EGFR-TKIs (gefitinib or erlotinib) as first-line therapy in patients with EGFR mutation-positive advanced NSCLC, with a similar safety profile and lower rates of serious adverse events.",
+        "doi": "10.1056/NEJMoa1713137"
+      }
+    ],
+    "biorxiv": [
+      {
+        "doi": "10.1101/2022.04.15.488421",
+        "title": "Adaptive genomic evolution in EGFR-mutant lung adenocarcinomas under targeted selective pressure",
+        "authors": "Bose S, Carter H, Swanton C",
+        "pub_date": "2022-04-16",
+        "abstract": "We trace clonal dynamics in EGFR mutant lung cancers during Gefitinib therapy, identifying diverse resistance pathways including MET amplification and secondary T790M mutations. Clonal heterogeneity at baseline predicts early progression."
+      }
+    ],
+    "openalex": [
+      {
+        "id": "https://openalex.org/W4012345678",
+        "title": "Structure-function Relationships of EGFR Kinase Domain Mutations",
+        "authors": "Zhang Y, Kuriyan J",
+        "pub_date": "2019-03-05",
+        "abstract": "EGFR activating mutations in the kinase domain, including L858R and exon 19 deletions, alter the asymmetric dimer interface, leading to ligand-independent activation. We present structural insights explaining differential inhibitor sensitivity.",
+        "doi": "10.1016/j.cell.2019.02.011"
+      }
+    ]
+  },
+  "TP53": {
+    "query": "TP53",
+    "pubmed": [
+      {
+        "pmid": "28456123",
+        "title": "The TP53 Pathway in Human Cancer",
+        "authors": "Kastan M, Lane D, Vogelstein B",
+        "journal": "Cold Spring Harbor Perspectives in Biology",
+        "pub_date": "2016-09-01",
+        "abstract": "The TP53 gene encoding the p53 tumor suppressor is mutated in over 50% of human cancers. We review downstream transcriptional targets controlling cell cycle arrest, senescence, and apoptosis, and discuss ongoing attempts to pharmacologically rescue mutant p53 conformation.",
+        "doi": "10.1101/cshperspect.a026112"
+      }
+    ],
+    "biorxiv": [
+      {
+        "doi": "10.1101/2023.01.12.523812",
+        "title": "Deep mutational scanning of the p53 DNA-binding domain reveals structural determinants of transcriptional activity",
+        "authors": "Fowler D, Fields S, Laurent A",
+        "pub_date": "2023-01-14",
+        "abstract": "Mutational profiling of all single amino acid changes in the p53 DNA-binding domain details structural hot-spots vulnerable to loss-of-function. We correlate transcriptional activity scores with clinical hotspot mutations across cancer cohorts."
+      }
+    ],
+    "openalex": [
+      {
+        "id": "https://openalex.org/W5012345678",
+        "title": "p53 Isoforms: An Oncological Perspective",
+        "authors": "Bourdon J, Khoury M",
+        "pub_date": "2020-04-12",
+        "abstract": "Alternatively spliced isoforms of p53 modulate the canonical tumor suppressor activity. Expression patterns of p53 beta/gamma correlate with clinical prognosis in breast cancer and leukemia.",
+        "doi": "10.1038/s41416-020-0822-z"
+      }
+    ]
+  }
+}

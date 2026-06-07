@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar/SearchBar';
+import GenePanel from './components/GenePanel/GenePanel';
+import VariantPanel from './components/VariantPanel/VariantPanel';
+import TherapeuticPanel from './components/TherapeuticPanel/TherapeuticPanel';
+import LiteraturePanel from './components/LiteraturePanel/LiteraturePanel';
+import MolViewer from './components/MolViewer/MolViewer';
+import StringNetwork from './components/StringNetwork/StringNetwork';
+import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/mockData';
+import { Activity, Layers, Database, Sparkles } from 'lucide-react';
+
+export const App: React.FC = () => {
+  const [loadedGene, setLoadedGene] = useState<any>(null);
+  const [loadedVariant, setLoadedVariant] = useState<any>(null);
+  const [loadedDisease, setLoadedDisease] = useState<any>(null);
+  const [loadedLiterature, setLoadedLiterature] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Layout Tab selection for small/standard screens
+  const [layoutTab, setLayoutTab] = useState<'visuals' | 'data'>('visuals');
+
+  // Pre-load default state for demonstration and testing (BRAF V600E / Melanoma discovery)
+  useEffect(() => {
+    setLoadedGene(mockGenes.BRAF);
+    setLoadedVariant(mockVariants.rs113488022);
+    setLoadedDisease(mockDiseases.Melanoma);
+    setLoadedLiterature(mockLiterature.BRAF);
+  }, []);
+
+  const handleSearch = async (query: string, type: 'gene' | 'variant' | 'disease' | 'unknown') => {
+    setIsLoading(true);
+    setError(null);
+    
+    // Simulate delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const upperQuery = query.toUpperCase();
+    const lowerQuery = query.toLowerCase();
+
+    if (type === 'gene') {
+      const gene = mockGenes[upperQuery];
+      if (!gene) {
+        setError(`Gene symbol "${query}" not found in database.`);
+        setIsLoading(false);
+        return;
+      }
+      setLoadedGene(gene);
+      setLoadedVariant(null); // Clear variant impact
+      
+      const lit = mockLiterature[upperQuery] || { query: upperQuery, pubmed: [], biorxiv: [], openalex: [] };
+      setLoadedLiterature(lit);
+      
+      if (gene.opentargets.associations.length > 0) {
+        const topAssoc = gene.opentargets.associations[0];
+        const disease = mockDiseases[topAssoc.disease_name];
+        if (disease) {
+          setLoadedDisease(disease);
+        }
+      }
+    } else if (type === 'variant') {
+      const variant = mockVariants[lowerQuery];
+      if (!variant) {
+        setError(`Variant ID "${query}" not found in database.`);
+        setIsLoading(false);
+        return;
+      }
+      setLoadedVariant(variant);
+      
+      const primaryEqtl = variant.gtex.eqtls.find(e => e.gene_symbol);
+      if (primaryEqtl) {
+        const targetGene = mockGenes[primaryEqtl.gene_symbol];
+        if (targetGene) {
+          setLoadedGene(targetGene);
+          
+          const lit = mockLiterature[primaryEqtl.gene_symbol];
+          if (lit) setLoadedLiterature(lit);
+          
+          if (targetGene.opentargets.associations.length > 0) {
+            const topAssoc = targetGene.opentargets.associations[0];
+            const disease = mockDiseases[topAssoc.disease_name];
+            if (disease) setLoadedDisease(disease);
+          }
+        }
+      }
+    } else if (type === 'disease') {
+      const key = Object.keys(mockDiseases).find(
+        k => k.toLowerCase() === lowerQuery
+      );
+      const disease = key ? mockDiseases[key] : null;
+      if (!disease) {
+        setError(`Disease indication "${query}" not found in database.`);
+        setIsLoading(false);
+        return;
+      }
+      setLoadedDisease(disease);
+      setLoadedVariant(null); // Clear variant impact
+      
+      const lit = mockLiterature[disease.disease_name] || {
+        query: disease.disease_name,
+        pubmed: [
+          {
+            pmid: "99001122",
+            title: `Advanced Genomic Investigation in ${disease.disease_name}`,
+            authors: "Explorer Group, BioMed Institute",
+            journal: "Journal of Precision Medicine",
+            pub_date: "2023-05-18",
+            abstract: `Abstract detailing the latest drug developments and molecular pathways for ${disease.disease_name}.`,
+            doi: `10.1234/jpm.2023.${disease.disease_name.toLowerCase().replace(/\s+/g, '-')}`
+          }
+        ],
+        biorxiv: [],
+        openalex: []
+      };
+      setLoadedLiterature(lit);
+      
+      if (disease.opentargets.associated_genes.length > 0) {
+        const topGeneSymbol = disease.opentargets.associated_genes[0].symbol;
+        const gene = mockGenes[topGeneSymbol];
+        if (gene) {
+          setLoadedGene(gene);
+        }
+      }
+    } else {
+      setError(`Cannot auto-detect entity type. Try searching "BRAF", "rs113488022", or "Melanoma".`);
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-cyan-500/30 relative">
+      {/* Background radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 -z-10 pointer-events-none" />
+
+      {/* Header bar */}
+      <header className="h-16 border-b border-white/5 backdrop-blur-md bg-slate-950/40 sticky top-0 z-50 flex items-center px-6 justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-1.5 bg-gradient-to-tr from-cyan-400 to-indigo-500 rounded-lg text-slate-950">
+            <Activity className="w-5 h-5" />
+          </div>
+          <h1 className="text-lg font-bold font-outfit tracking-tight flex items-center space-x-2">
+            <span className="bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">BioMed Explorer</span>
+            <span className="text-3xs bg-cyan-500/10 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-500/20 font-mono">v1.0</span>
+          </h1>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <span className="text-2xs text-slate-400 font-mono flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+            <Database className="w-3 h-3 text-cyan-400" />
+            <span>Aggregate Mode</span>
+          </span>
+        </div>
+      </header>
+
+      {/* Top search controls bar */}
+      <section className="max-w-[1920px] mx-auto px-4 md:px-6 pt-5">
+        <div className="glass-panel p-4 flex flex-col md:flex-row items-center gap-4 justify-between">
+          <div className="w-full md:max-w-xl">
+            <SearchBar onSearch={handleSearch} isLoading={isLoading} error={error} />
+          </div>
+          <div className="text-right hidden md:block">
+            <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">Active Session Target</span>
+            <span className="text-xs font-bold text-white font-outfit mt-0.5 block">
+              {loadedGene ? `${loadedGene.symbol}` : 'None'} {loadedVariant ? `• ${loadedVariant.variant_id}` : ''} {loadedDisease ? `• ${loadedDisease.disease_name}` : ''}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Grid Content */}
+      <main className="p-4 md:p-6 max-w-[1920px] mx-auto">
+        {/* Layout Tabs for Standard Desktop / Tablet Viewports */}
+        <div className="flex xl:hidden mb-4 bg-white/5 p-1 rounded-xl border border-white/5 max-w-sm">
+          <button
+            onClick={() => setLayoutTab('visuals')}
+            data-testid="tab-trigger-layout-visuals"
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              layoutTab === 'visuals' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            3D Visuals & Network
+          </button>
+          <button
+            onClick={() => setLayoutTab('data')}
+            data-testid="tab-trigger-layout-data"
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              layoutTab === 'data' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Target & Variant Data
+          </button>
+        </div>
+
+        {/* 12-Column Responsive Matrix */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+          {/* LEFT SIDEBAR: Search Details & Literature (Columns 1-3) */}
+          <div className="xl:col-span-3 flex flex-col space-y-5">
+            <GenePanel geneData={loadedGene} isLoading={isLoading} />
+            <LiteraturePanel literatureData={loadedLiterature} isLoading={isLoading} />
+          </div>
+
+          {/* CENTER PANEL: Interactive 3D Visualizer & STRING network graph (Columns 4-9 on XL) */}
+          <div className={`xl:col-span-6 flex flex-col space-y-5 ${layoutTab === 'visuals' ? 'block' : 'hidden xl:flex'}`}>
+            <div className="space-y-2">
+              <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
+                WebGL Molecular Viewer
+              </span>
+              <MolViewer pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'} />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
+                STRING Interaction Network
+              </span>
+              <StringNetwork geneSymbol={loadedGene?.symbol || 'BRAF'} />
+            </div>
+          </div>
+
+          {/* RIGHT SIDEBAR: Variant Impact & Therapeutics (Columns 10-12 on XL) */}
+          <div className={`xl:col-span-3 flex flex-col space-y-5 ${layoutTab === 'data' ? 'block' : 'hidden xl:flex'}`}>
+            <VariantPanel variantData={loadedVariant} isLoading={isLoading} />
+            <TherapeuticPanel diseaseData={loadedDisease} isLoading={isLoading} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+export default App;

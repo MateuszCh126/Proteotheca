@@ -11,15 +11,30 @@ if backend_dir not in sys.path:
 if workspace_dir not in sys.path:
     sys.path.insert(0, workspace_dir)
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     mock_mode: bool = True
     host: str = "127.0.0.1"
     port: int = 8000
+    database_url: str = "sqlite+aiosqlite:///./biomed_explorer.db"
+    jwt_secret: str = "dev-only-change-me"
+    jwt_algorithm: str = "HS256"
+    jwt_expires_minutes: int = 1440
+    auth_cookie_name: str = "biomed_token"
+    auth_cookie_secure: bool = False
+    auth_cookie_samesite: str = "lax"
+    cors_allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    auto_create_tables: bool = True
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    @property
+    def cors_origins(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.cors_allowed_origins.split(",")
+            if origin.strip()
+        ]
 
 settings = Settings()

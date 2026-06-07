@@ -3,11 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
-from app.api import genes, variants, diseases, literature
+from app.api import auth, genes, variants, diseases, literature, projects
 from app.config import settings
+from app.database import create_all
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.auto_create_tables:
+        await create_all()
     # Initialize the asynchronous HTTPX client on startup
     client = httpx.AsyncClient()
     app.state.http_client = client
@@ -24,17 +27,19 @@ app = FastAPI(
 # Enable CORS middleware to allow requests from the React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust as needed in production
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Register endpoint routers
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(genes.router, prefix="/api/genes", tags=["genes"])
 app.include_router(variants.router, prefix="/api/variants", tags=["variants"])
 app.include_router(diseases.router, prefix="/api/diseases", tags=["diseases"])
 app.include_router(literature.router, prefix="/api/literature", tags=["literature"])
+app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
 
 @app.get("/")
 def read_root():

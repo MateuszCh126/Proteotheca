@@ -1,12 +1,20 @@
 import asyncio
 import logging
 import re
-from typing import List
+from typing import List, Optional, Any
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
 from app.config import settings
-from app.services import clinvar_service, gnomad_service, gtex_service
+from app.services import (
+    clinvar_service,
+    gnomad_service,
+    gtex_service,
+    alphagenome_service,
+    dbsnp_service,
+    encode_service,
+    ucsc_service
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -39,6 +47,10 @@ class VariantResponse(BaseModel):
     clinvar: ClinVarResponse
     gnomad: GnomadResponse
     gtex: GtexResponse
+    alphagenome: Optional[Any] = None
+    dbsnp: Optional[Any] = None
+    encode: Optional[Any] = None
+    ucsc: Optional[Any] = None
 
 async def resolve_rsid_to_coordinates(client, rsid: str, mock_mode: bool) -> str:
     if mock_mode:
@@ -163,11 +175,31 @@ async def get_variant(variant_id: str, request: Request):
         else:
             raise HTTPException(status_code=400, detail="Invalid variant_id format. Must be rsID or coordinates.")
 
-    # Stage 2: Query clinvar, gnomad, and gtex concurrently
+    # Parse chromosome and position details
+    chrom = "7"
+    pos_val = 140753336
+    ref_len = 1
+    alt_len = 1
+    
+    parts = resolved_coordinate.split("-")
+    if len(parts) >= 4:
+        chrom = parts[0]
+        try:
+            pos_val = int(parts[1])
+        except ValueError:
+            pass
+        ref_len = len(parts[2])
+        alt_len = len(parts[3])
+
+    # Stage 2: Query services concurrently
     results = await asyncio.gather(
         clinvar_service.get_clinvar_data(client, clean_id, mock_mode),
         gnomad_service.get_gnomad_data(client, resolved_coordinate, mock_mode),
         gtex_service.get_gtex_data(client, resolved_coordinate, mock_mode),
+        alphagenome_service.get_alphagenome_predictions(client, resolved_coordinate, mock_mode),
+        dbsnp_service.get_dbsnp_data(client, clean_id, mock_mode) if is_rsid else asyncio.sleep(0, {}),
+        encode_service.get_encode_ccres(client, chrom, pos_val - 1000, pos_val + 1000 + max(ref_len, alt_len), mock_mode),
+        ucsc_service.get_conservation_and_tfbs(client, chrom, pos_val, pos_val + max(ref_len, alt_len), mock_mode),
         return_exceptions=True
     )
 
@@ -194,9 +226,23 @@ async def get_variant(variant_id: str, request: Request):
         logger.error(f"GTEx query exception: {str(gtex_data)}")
         gtex_data = {"eqtls": []}
 
+    def extract_result(res, default):
+        if isinstance(res, Exception) or res is None:
+            return default
+        return res
+
+    alphagenome_data = extract_result(results[3], {})
+    dbsnp_data = extract_result(results[4], {})
+    encode_data = extract_result(results[5], {})
+    ucsc_data = extract_result(results[6], {})
+
     return {
         "variant_id": clean_id,
         "clinvar": clinvar_data,
         "gnomad": gnomad_data,
-        "gtex": gtex_data
+        "gtex": gtex_data,
+        "alphagenome": alphagenome_data,
+        "dbsnp": dbsnp_data,
+        "encode": encode_data,
+        "ucsc": ucsc_data
     }

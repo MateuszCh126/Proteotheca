@@ -33,6 +33,14 @@ async def get_active_compounds(client: httpx.AsyncClient, disease_name: str, moc
                     {"chembl_id": "CHEMBL506", "name": "TAMOXIFEN", "ic50_nm": 15.0},
                     {"chembl_id": "CHEMBL1201585", "name": "TRASTUZUMAB", "ic50_nm": 5.5}
                 ]
+            },
+            "lung cancer": {
+                "active_compounds": [
+                    {"chembl_id": "CHEMBL28357", "name": "GEFITINIB", "ic50_nm": 3.2},
+                    {"chembl_id": "CHEMBL1489", "name": "ERLOTINIB", "ic50_nm": 2.1},
+                    {"chembl_id": "CHEMBL3137343", "name": "OSIMERTINIB", "ic50_nm": 0.6},
+                    {"chembl_id": "CHEMBL3813872", "name": "ALECTINIB", "ic50_nm": 1.8}
+                ]
             }
         }
         for k, v in mock_data.items():

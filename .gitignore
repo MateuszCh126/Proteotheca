@@ -37,3 +37,16 @@ pnpm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# Local database (contains user accounts / password hashes — never publish)
+*.db
+*.sqlite
+*.sqlite3
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Agent / tooling scratch output (regenerable, not part of the product)
+.graphify/
+graphify-out/

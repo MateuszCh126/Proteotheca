@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Network, Play, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Network, Play, RefreshCw, ZoomIn, ZoomOut, Search } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
 interface StringNetworkProps {
@@ -8,11 +8,16 @@ interface StringNetworkProps {
 
 interface Node {
   id: string;
-  x: number;
-  y: number;
   size: number;
   color: string;
   role: string;
+}
+
+interface PhysicsNode extends Node {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
 }
 
 interface Link {
@@ -24,16 +29,23 @@ interface Link {
 export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF' }) => {
   const { t } = useI18n();
   const [isActive, setIsActive] = useState(false);
-  const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<PhysicsNode | null>(null);
+  const [nodesState, setNodesState] = useState<PhysicsNode[]>([]);
+  const [zoom, setZoom] = useState(1);
 
-  const nodes: Node[] = [
-    { id: geneSymbol, x: 200, y: 180, size: 22, color: 'hsl(180, 80%, 45%)', role: t('string.queryTarget') },
-    { id: 'KRAS', x: 100, y: 100, size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
-    { id: 'NRAS', x: 300, y: 100, size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
-    { id: 'MAP2K1', x: 200, y: 280, size: 16, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamEffector') },
-    { id: 'MAPK1', x: 280, y: 320, size: 14, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamKinase') },
-    { id: 'EGFR', x: 80, y: 220, size: 16, color: 'hsl(142, 70%, 45%)', role: t('string.receptorTyrosineKinase') }
-  ];
+  const svgRef = useRef<SVGSVGElement>(null);
+  const draggedNodeRef = useRef<string | null>(null);
+  const mousePosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Define nodes and links dynamically based on the current query gene
+  const rawNodes: Node[] = [
+    { id: geneSymbol, size: 22, color: 'hsl(180, 80%, 45%)', role: t('string.queryTarget') },
+    { id: 'KRAS', size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
+    { id: 'NRAS', size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
+    { id: 'MAP2K1', size: 16, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamEffector') },
+    { id: 'MAPK1', size: 14, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamKinase') },
+    { id: 'EGFR', size: 16, color: 'hsl(142, 70%, 45%)', role: t('string.receptorTyrosineKinase') }
+  ].filter((n, idx, self) => self.findIndex(other => other.id === n.id) === idx);
 
   const links: Link[] = [
     { source: geneSymbol, target: 'KRAS', score: 0.98 },
@@ -42,81 +54,256 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
     { source: 'MAP2K1', target: 'MAPK1', score: 0.99 },
     { source: 'KRAS', target: 'EGFR', score: 0.88 },
     { source: geneSymbol, target: 'EGFR', score: 0.76 }
-  ];
+  ].filter(l => l.source !== l.target && rawNodes.some(n => n.id === l.source) && rawNodes.some(n => n.id === l.target));
+
+  // Initialize node positions
+  useEffect(() => {
+    if (!isActive) return;
+
+    const initialNodes: PhysicsNode[] = rawNodes.map((n, idx) => {
+      // Position them in a circle around the center
+      const angle = (idx / rawNodes.length) * 2 * Math.PI;
+      const r = n.id === geneSymbol ? 0 : 110;
+      return {
+        ...n,
+        x: 200 + r * Math.cos(angle),
+        y: 200 + r * Math.sin(angle),
+        vx: 0,
+        vy: 0,
+      };
+    });
+
+    setNodesState(initialNodes);
+  }, [isActive, geneSymbol]);
+
+  // Global mouse release handler
+  useEffect(() => {
+    const handleMouseUpGlobal = () => {
+      draggedNodeRef.current = null;
+    };
+    window.addEventListener('mouseup', handleMouseUpGlobal);
+    return () => window.removeEventListener('mouseup', handleMouseUpGlobal);
+  }, []);
+
+  // Physics animation loop
+  useEffect(() => {
+    if (!isActive || nodesState.length === 0) return;
+
+    let animFrameId: number;
+    let currentNodes = [...nodesState];
+
+    const tick = () => {
+      const width = 400;
+      const height = 400;
+      const kRepulsion = 1400;
+      const kAttraction = 0.045;
+      const lDesired = 95;
+      const gravity = 0.015;
+      const friction = 0.86;
+
+      // 1. Repulsion between all node pairs
+      for (let i = 0; i < currentNodes.length; i++) {
+        const u = currentNodes[i];
+        for (let j = i + 1; j < currentNodes.length; j++) {
+          const v = currentNodes[j];
+          const dx = u.x - v.x;
+          const dy = u.y - v.y;
+          const distSq = dx * dx + dy * dy + 0.01;
+          const dist = Math.sqrt(distSq);
+
+          const force = kRepulsion / distSq;
+          const fx = (dx / dist) * force;
+          const fy = (dy / dist) * force;
+
+          u.vx += fx;
+          u.vy += fy;
+          v.vx -= fx;
+          v.vy -= fy;
+        }
+      }
+
+      // 2. Attraction along connected links
+      for (const link of links) {
+        const u = currentNodes.find(n => n.id === link.source);
+        const v = currentNodes.find(n => n.id === link.target);
+        if (!u || !v) continue;
+
+        const dx = u.x - v.x;
+        const dy = u.y - v.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const delta = dist - lDesired;
+
+        const force = kAttraction * delta * link.score;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+
+        u.vx -= fx;
+        u.vy -= fy;
+        v.vx += fx;
+        v.vy += fy;
+      }
+
+      // 3. Apply friction and update coordinates
+      const mousePos = mousePosRef.current;
+      const draggedNodeId = draggedNodeRef.current;
+
+      currentNodes = currentNodes.map(node => {
+        if (node.id === draggedNodeId && mousePos) {
+          // Locked to dragged mouse
+          return {
+            ...node,
+            x: mousePos.x,
+            y: mousePos.y,
+            vx: 0,
+            vy: 0,
+          };
+        }
+
+        let vx = node.vx * friction;
+        let vy = node.vy * friction;
+
+        // Apply gravity to center (200, 200)
+        vx += (200 - node.x) * gravity;
+        vy += (200 - node.y) * gravity;
+
+        let x = node.x + vx;
+        let y = node.y + vy;
+
+        // Keep inside bounds
+        const margin = node.size + 15;
+        if (x < margin) { x = margin; vx = 0; }
+        if (x > width - margin) { x = width - margin; vx = 0; }
+        if (y < margin) { y = margin; vy = 0; }
+        if (y > height - margin) { y = height - margin; vy = 0; }
+
+        return {
+          ...node,
+          x,
+          y,
+          vx,
+          vy,
+        };
+      });
+
+      setNodesState(currentNodes);
+      animFrameId = requestAnimationFrame(tick);
+    };
+
+    animFrameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animFrameId);
+  }, [isActive, nodesState.length]);
 
   const handleActivate = () => {
     setIsActive(true);
+    setZoom(1);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 400;
+    const y = ((e.clientY - rect.top) / rect.height) * 400;
+    mousePosRef.current = { x, y };
+  };
+
+  const handleMouseDown = (nodeId: string) => {
+    draggedNodeRef.current = nodeId;
+  };
+
+  const handleNodeDoubleClick = (nodeId: string) => {
+    const input = document.querySelector('input[data-testid="search-input"]') as HTMLInputElement;
+    if (input) {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(input, nodeId);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        input.value = nodeId;
+      }
+      setTimeout(() => {
+        const btn = document.querySelector('button[data-testid="search-button"]') as HTMLButtonElement;
+        btn?.click();
+      }, 50);
+    }
   };
 
   const getPosition = (id: string) => {
-    const node = nodes.find(n => n.id === id);
-    return node ? { x: node.x, y: node.y } : { x: 0, y: 0 };
+    const node = nodesState.find(n => n.id === id);
+    return node ? { x: node.x, y: node.y } : { x: 200, y: 200 };
   };
 
   return (
-    <div 
+    <div
       className="relative w-full h-[400px] border border-white/10 rounded-2xl bg-slate-950/35 backdrop-blur-md flex flex-col items-center justify-center overflow-hidden group"
       data-testid="string-network-container"
     >
-      {/* SVG Canvas */}
-      {isActive ? (
+      {isActive && nodesState.length > 0 ? (
         <div className="w-full h-full relative z-0">
-          <svg className="w-full h-full select-none" viewBox="0 0 400 400">
-            {/* Draw Links */}
-            {links.map((link, i) => {
-              const start = getPosition(link.source);
-              const end = getPosition(link.target);
-              return (
-                <line
-                  key={i}
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  strokeWidth={link.score * 3}
-                  strokeDasharray="none"
-                  className="transition-all"
-                />
-              );
-            })}
-
-            {/* Draw Nodes */}
-            {nodes.map((node) => {
-              const isQuery = node.id === geneSymbol;
-              const isHovered = hoveredNode?.id === node.id;
-              return (
-                <g 
-                  key={node.id}
-                  className="cursor-pointer transition-all duration-150"
-                  onMouseEnter={() => setHoveredNode(node)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                >
-                  <circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={node.size + (isHovered ? 3 : 0)}
-                    fill={node.color}
-                    className="transition-all shadow-glass-glow"
-                    stroke={isQuery ? 'white' : 'rgba(255,255,255,0.3)'}
-                    strokeWidth={isQuery ? 2.5 : 1}
+          <svg
+            ref={svgRef}
+            onMouseMove={handleMouseMove}
+            className="w-full h-full select-none"
+            viewBox="0 0 400 400"
+          >
+            {/* Transform Group for Zoom & Pan */}
+            <g transform={`translate(${200 * (1 - zoom)}, ${200 * (1 - zoom)}) scale(${zoom})`}>
+              {/* Draw Links */}
+              {links.map((link, i) => {
+                const start = getPosition(link.source);
+                const end = getPosition(link.target);
+                return (
+                  <line
+                    key={i}
+                    x1={start.x}
+                    y1={start.y}
+                    x2={end.x}
+                    y2={end.y}
+                    stroke="rgba(34, 211, 238, 0.2)"
+                    strokeWidth={link.score * 3.5}
+                    className="transition-all"
                   />
-                  <text
-                    x={node.x}
-                    y={node.y - node.size - 6}
-                    textAnchor="middle"
-                    fill="white"
-                    className="text-3xs font-extrabold tracking-tight font-outfit select-none pointer-events-none drop-shadow"
+                );
+              })}
+
+              {/* Draw Nodes */}
+              {nodesState.map((node) => {
+                const isQuery = node.id === geneSymbol;
+                const isHovered = hoveredNode?.id === node.id;
+                return (
+                  <g
+                    key={node.id}
+                    className="cursor-pointer transition-all duration-75"
+                    onMouseDown={() => handleMouseDown(node.id)}
+                    onDoubleClick={() => handleNodeDoubleClick(node.id)}
+                    onMouseEnter={() => setHoveredNode(node)}
+                    onMouseLeave={() => setHoveredNode(null)}
                   >
-                    {node.id}
-                  </text>
-                </g>
-              );
-            })}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={node.size + (isHovered ? 2 : 0)}
+                      fill={node.color}
+                      stroke={isQuery ? 'white' : 'rgba(255,255,255,0.4)'}
+                      strokeWidth={isQuery ? 2.5 : 1}
+                      className="transition-all filter drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"
+                    />
+                    <text
+                      x={node.x}
+                      y={node.y - node.size - 6}
+                      textAnchor="middle"
+                      fill="white"
+                      className="text-3xs font-extrabold tracking-tight font-outfit select-none pointer-events-none drop-shadow"
+                    >
+                      {node.id}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
           </svg>
 
           {/* Legend and Hover Card */}
-          <div className="absolute top-4 left-4 p-2 bg-slate-950/80 border border-white/10 rounded-lg text-3xs font-outfit space-y-1 shadow-md max-w-xs">
+          <div className="absolute top-4 left-4 p-2 bg-slate-950/80 border border-white/10 rounded-lg text-3xs font-outfit space-y-1 shadow-md max-w-xs pointer-events-none">
             <span className="font-bold text-white block">{t('string.title')}</span>
             <div className="flex items-center space-x-1.5">
               <span className="w-2 h-2 rounded-full bg-cyan-400" />
@@ -129,30 +316,45 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
           </div>
 
           {hoveredNode && (
-            <div className="absolute bottom-4 right-4 p-2.5 bg-slate-950/90 border border-white/15 rounded-xl text-3xs font-outfit shadow-2xl max-w-xs animate-fade-in">
+            <div className="absolute bottom-4 right-4 p-2.5 bg-slate-950/90 border border-white/15 rounded-xl text-3xs font-outfit shadow-2xl max-w-xs pointer-events-none animate-fade-in">
               <span className="font-extrabold text-white block text-xs">{hoveredNode.id}</span>
               <span className="text-slate-400 block mt-0.5">{hoveredNode.role}</span>
               <span className="text-3xs text-slate-500 block font-mono mt-1">
-                {t('string.coord', { x: hoveredNode.x, y: hoveredNode.y })}
+                {t('string.coord', { x: Math.round(hoveredNode.x), y: Math.round(hoveredNode.y) })}
+              </span>
+              <span className="text-3xs text-cyan-300 block font-medium mt-1">
+                Double click to query this gene
               </span>
             </div>
           )}
 
           {/* Floating Controls */}
           <div className="absolute bottom-4 left-4 flex space-x-1 bg-slate-950/60 border border-white/10 p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-opacity">
-            <button className="p-1 hover:bg-white/10 rounded text-slate-300">
+            <button
+              onClick={() => setZoom(z => Math.min(z * 1.25, 3))}
+              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              title="Zoom In"
+            >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 hover:bg-white/10 rounded text-slate-300">
+            <button
+              onClick={() => setZoom(z => Math.max(z / 1.25, 0.5))}
+              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              title="Zoom Out"
+            >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 hover:bg-white/10 rounded text-slate-300" onClick={() => setIsActive(false)}>
+            <button
+              onClick={() => { setZoom(1); }}
+              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              title="Reset Zoom"
+            >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       ) : (
-        <div 
+        <div
           onClick={handleActivate}
           className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group-hover:bg-slate-950/70 z-20"
         >
@@ -169,4 +371,5 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
     </div>
   );
 };
+
 export default StringNetwork;

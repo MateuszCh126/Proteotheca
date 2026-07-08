@@ -25,9 +25,28 @@ export interface OpenalexArticle {
   doi: string;
 }
 
+export interface ArxivArticle {
+  id: string;
+  title: string;
+  authors: string;
+  pub_date: string;
+  abstract: string;
+}
+
+export interface EuropePmcArticle {
+  pmcid: string;
+  title: string;
+  authors: string;
+  journal: string;
+  pub_date: string;
+  abstract: string;
+}
+
 export interface LiteratureData {
   query: string;
   pubmed: PubmedArticle[];
   biorxiv: BiorxivArticle[];
   openalex: OpenalexArticle[];
+  arxiv?: ArxivArticle[];
+  europepmc?: EuropePmcArticle[];
 }

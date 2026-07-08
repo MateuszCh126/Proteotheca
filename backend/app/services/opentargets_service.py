@@ -116,6 +116,14 @@ async def get_disease_associations(client: httpx.AsyncClient, disease_name: str,
                     {"symbol": "BRCA2", "score": 0.97},
                     {"symbol": "PIK3CA", "score": 0.85}
                 ]
+            },
+            "lung cancer": {
+                "associated_genes": [
+                    {"symbol": "EGFR", "score": 0.92},
+                    {"symbol": "KRAS", "score": 0.87},
+                    {"symbol": "ALK", "score": 0.84},
+                    {"symbol": "TP53", "score": 0.79}
+                ]
             }
         }
         for k, v in mock_data.items():

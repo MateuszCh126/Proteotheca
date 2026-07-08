@@ -46,10 +46,40 @@ export interface OpenFdaData {
   age_breakdown: DemographicData[];
 }
 
+export interface PubChemData {
+  cid: number;
+  name: string;
+  formula: string;
+  smiles: string;
+  weight: number;
+}
+
+export interface OlsData {
+  obo_id: string;
+  label: string;
+  description: string[];
+  path?: string[];
+}
+
+export interface EncodeCcre {
+  accession: string;
+  chrom: string;
+  start: number;
+  len: number;
+  pct: string; // e.g. pELS, dELS, PLS
+}
+
+export interface EncodeData {
+  ccres: EncodeCcre[];
+}
+
 export interface DiseaseData {
   disease_name: string;
   opentargets: OpenTargetsDiseaseData;
   chembl: ChEMBLData;
   clinical_trials: ClinicalTrialsData;
   openfda: OpenFdaData;
+  pubchem?: PubChemData;
+  ols?: OlsData;
+  encode?: EncodeData;
 }

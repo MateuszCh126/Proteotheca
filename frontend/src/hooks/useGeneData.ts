@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GeneData } from '../types/gene';
-import { mockGenes } from '../api/mockData';
+import { apiJson } from '../api/client';
 
 export function useGeneData(symbol: string | null) {
   const [data, setData] = useState<GeneData | null>(null);
@@ -17,20 +17,33 @@ export function useGeneData(symbol: string | null) {
 
     setIsLoading(true);
     setError(null);
+    let active = true;
 
-    const timer = setTimeout(() => {
-      const found = mockGenes[symbol.toUpperCase()];
-      if (found) {
-        setData(found);
-      } else {
-        setData(null);
-        setError(`Gene symbol "${symbol}" not found in database.`);
+    async function fetchData() {
+      try {
+        const result = await apiJson<GeneData>(`/api/genes/${encodeURIComponent(symbol as string)}`);
+        if (active) {
+          setData(result);
+        }
+      } catch (err: any) {
+        if (active) {
+          setData(null);
+          setError(err?.message || `Gene symbol "${symbol}" not found in database.`);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
-    }, 400); // Simulated delay
+    }
 
-    return () => clearTimeout(timer);
+    fetchData();
+
+    return () => {
+      active = false;
+    };
   }, [symbol]);
 
   return { data, isLoading, error };
 }
+

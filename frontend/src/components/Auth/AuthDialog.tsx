@@ -59,6 +59,7 @@ export default function AuthDialog({ mode, onClose }: AuthDialogProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
+        <div className="text-xs font-semibold text-slate-400">Access BioMed Portal</div>
 
         {activeMode === 'register' && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Atom, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { Viewer } from 'molstar/lib/apps/viewer/app';
+import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
+import 'molstar/build/viewer/molstar.css';
+import { API_BASE } from '../../api/client';
+
 
 export type MolViewerRepresentation = 'cartoon' | 'surface' | 'spheres';
 export type MolViewerColorMode = 'plddt' | 'chain' | 'hydrophobicity';
@@ -26,6 +31,122 @@ export const MolViewer: React.FC<MolViewerProps> = ({
   const representation = controlledRepresentation ?? internalRepresentation;
   const colorMode = controlledColorMode ?? internalColorMode;
 
+  const parentRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Viewer | null>(null);
+  const [isViewerLoading, setIsViewerLoading] = useState(false);
+
+  // Initialize and load structure on pdbId change
+  useEffect(() => {
+    let active = true;
+    let viewerInstance: Viewer | null = null;
+
+    async function init() {
+      if (!parentRef.current) return;
+      setIsViewerLoading(true);
+      try {
+        // Clear previous container contents
+        parentRef.current.innerHTML = '';
+        const container = document.createElement('div');
+        container.className = 'w-full h-full relative';
+        parentRef.current.appendChild(container);
+
+        viewerInstance = await Viewer.create(container, {
+          layoutIsExpanded: false,
+          layoutShowControls: false,
+          layoutShowRemoteState: false,
+          layoutShowSequence: false,
+          layoutShowLog: false,
+          layoutShowLeftPanel: false,
+          viewportShowExpand: false,
+          viewportShowControls: false,
+          viewportShowSettings: false,
+          viewportShowSelectionMode: false,
+          viewportShowAnimation: false,
+          viewportShowTrajectoryControls: false,
+        });
+
+        if (!active) {
+          viewerInstance.dispose();
+          return;
+        }
+
+        viewerRef.current = viewerInstance;
+
+        // Load molecular structure
+        if (pdbId) {
+          if (pdbId.startsWith('AF-')) {
+            await viewerInstance.loadAlphaFoldDb(pdbId);
+          } else {
+            await viewerInstance.loadPdb(pdbId);
+          }
+        }
+
+        // Apply initial visual settings
+        await applyVisualSettings(viewerInstance, representation, colorMode);
+      } catch (err) {
+        console.error('Failed to initialize MolStar viewer', err);
+      } finally {
+        if (active) {
+          setIsViewerLoading(false);
+        }
+      }
+    }
+
+    init();
+
+    return () => {
+      active = false;
+      if (viewerInstance) {
+        viewerInstance.dispose();
+      }
+      if (parentRef.current) {
+        parentRef.current.innerHTML = '';
+      }
+      viewerRef.current = null;
+    };
+  }, [pdbId]);
+
+  // Apply visual settings on representation or colorMode change
+  useEffect(() => {
+    if (viewerRef.current && !isViewerLoading) {
+      applyVisualSettings(viewerRef.current, representation, colorMode);
+    }
+  }, [representation, colorMode, isViewerLoading]);
+
+  // Helper to apply representation and coloring modes
+  const applyVisualSettings = async (
+    viewer: Viewer,
+    rep: MolViewerRepresentation,
+    col: MolViewerColorMode
+  ) => {
+    try {
+      const structures = viewer.plugin.managers.structure.hierarchy.current.structures;
+      if (structures.length === 0) return;
+
+      const preset =
+        rep === 'surface'
+          ? PresetStructureRepresentations['molecular-surface']
+          : rep === 'spheres'
+          ? PresetStructureRepresentations.auto
+          : PresetStructureRepresentations['polymer-cartoon'];
+
+      const colorTheme =
+        col === 'plddt'
+          ? 'plddt-plus-model-index'
+          : col === 'hydrophobicity'
+          ? 'hydrophobicity'
+          : 'chain-id';
+
+      await viewer.plugin.managers.structure.component.applyPreset(structures, preset, {
+        theme: {
+          globalName: colorTheme as any,
+        },
+      } as any);
+    } catch (err) {
+      console.warn('Could not apply visual settings to MolStar', err);
+    }
+  };
+
   const handleRepresentationChange = (nextRepresentation: MolViewerRepresentation) => {
     setInternalRepresentation(nextRepresentation);
     onRepresentationChange?.(nextRepresentation);
@@ -36,59 +157,129 @@ export const MolViewer: React.FC<MolViewerProps> = ({
     onColorModeChange?.(nextColorMode);
   };
 
+  const handleZoomIn = () => {
+    const camera = viewerRef.current?.plugin.canvas3d?.camera;
+    if (camera) {
+      const snapshot = camera.getSnapshot();
+      camera.setState({ radius: snapshot.radius * 0.85 }, 150);
+    }
+  };
+
+  const handleZoomOut = () => {
+    const camera = viewerRef.current?.plugin.canvas3d?.camera;
+    if (camera) {
+      const snapshot = camera.getSnapshot();
+      camera.setState({ radius: snapshot.radius * 1.15 }, 150);
+    }
+  };
+
+  const handleRecenter = () => {
+    viewerRef.current?.plugin.canvas3d?.requestCameraReset();
+  };
+
+  const [isRendering, setIsRendering] = useState(false);
+
+  const handleGenerateDetailedRender = async () => {
+    setIsRendering(true);
+    try {
+      const payload = {
+        pdb_id: pdbId,
+        representation: representation,
+        color_by: colorMode === 'chain' ? 'chain' : 'plddt',
+        residues: []
+      };
+
+      const response = await fetch(`${API_BASE}/api/pymol/render`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'image/png'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate render');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${pdbId}_pymol_${representation}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PyMOL render error:', err);
+      alert('Failed to generate PyMOL render.');
+    } finally {
+      setIsRendering(false);
+    }
+  };
+
   return (
+
     <div
       className="group relative flex h-[400px] w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 shadow-inner backdrop-blur-md"
       data-testid="mol-viewer-container"
     >
-      <div className="pointer-events-none absolute inset-0 z-0 select-none">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-400 via-transparent to-transparent" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(34,211,238,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.35)_1px,transparent_1px)] [background-size:42px_42px]" />
-      </div>
+      {/* WebGL Canvas Parent Mount Point */}
+      <div ref={parentRef} className="absolute inset-0 z-0 w-full h-full" />
 
-      <div className="absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-3 text-3xs font-bold uppercase tracking-[0.18em] text-slate-400">
-        <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-cyan-200">
-          PDB {pdbId}
-        </span>
+      {/* Loading Overlay */}
+      {isViewerLoading && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4" />
+          <span className="text-3xs font-mono text-cyan-300 uppercase tracking-widest">
+            {t('mol.fetching') || 'Loading structure...'}
+          </span>
+        </div>
+      )}
+
+      {/* Custom UI Header Controls */}
+      <div className="pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-3 text-3xs font-bold uppercase tracking-[0.18em] text-slate-400">
+        <div className="flex gap-2">
+          <span className="pointer-events-auto rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-cyan-200">
+            PDB {pdbId}
+          </span>
+          <button
+            onClick={handleGenerateDetailedRender}
+            disabled={isRendering}
+            data-testid="pymol-render-btn"
+            className="pointer-events-auto rounded-full border border-cyan-400/35 bg-cyan-500/20 hover:bg-cyan-500/30 px-3 py-1 text-cyan-200 font-bold uppercase cursor-pointer disabled:bg-slate-800 disabled:border-white/5 transition-all"
+          >
+            {isRendering ? 'Rendering...' : 'Generate Detailed Render'}
+          </button>
+        </div>
         <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-200">
           {t('mol.previewReady')}
         </span>
       </div>
 
-      <div className="absolute inset-0 z-0 flex flex-col items-center justify-center px-6 text-center">
-        <span className="mb-4 block text-3xs font-bold uppercase tracking-[0.28em] text-cyan-300">
-          {t('mol.structurePreviewReady')}
-        </span>
-        <div className="relative mx-auto mb-5 h-32 w-32">
-          <div className="absolute inset-0 rounded-full border border-cyan-400/20 bg-cyan-400/5 shadow-[0_0_55px_rgba(34,211,238,0.18)]" />
-          <div className="absolute left-7 top-9 h-px w-20 rotate-[28deg] bg-cyan-300/30" />
-          <div className="absolute left-7 top-[70px] h-px w-20 -rotate-[24deg] bg-violet-300/25" />
-          <div className="absolute left-14 top-6 h-20 w-px rotate-[12deg] bg-emerald-300/25" />
-          <span className="absolute left-5 top-8 h-6 w-6 rounded-full border border-cyan-300/70 bg-cyan-300/20 shadow-[0_0_18px_rgba(34,211,238,0.35)]" />
-          <span className="absolute right-4 top-14 h-5 w-5 rounded-full border border-violet-300/70 bg-violet-300/20 shadow-[0_0_18px_rgba(167,139,250,0.3)]" />
-          <span className="absolute bottom-8 left-10 h-4 w-4 rounded-full border border-emerald-300/70 bg-emerald-300/20" />
-          <span className="absolute right-9 top-7 h-3 w-3 rounded-full bg-cyan-200/70" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Atom className="h-10 w-10 text-cyan-200/70" />
-          </div>
-        </div>
-        <h4 className="font-outfit text-sm font-extrabold uppercase text-white">
-          {t('mol.structure', { pdbId, representation: t(`mol.${representation}` as const) })}
-        </h4>
-        <p className="mt-1 font-mono text-3xs text-slate-500">
-          {t('mol.coloring', { colorMode: t(`mol.${colorMode}` as const) })}
-        </p>
-      </div>
-
+      {/* Control Overlay Bar */}
       <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/70 p-2 shadow-lg backdrop-blur-md">
         <div className="flex space-x-1">
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.zoomIn')}>
+          <button
+            onClick={handleZoomIn}
+            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
+            title={t('mol.zoomIn')}
+          >
             <ZoomIn className="h-3.5 w-3.5" />
           </button>
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.zoomOut')}>
+          <button
+            onClick={handleZoomOut}
+            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
+            title={t('mol.zoomOut')}
+          >
             <ZoomOut className="h-3.5 w-3.5" />
           </button>
-          <button className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10" title={t('mol.recenter')}>
+          <button
+            onClick={handleRecenter}
+            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
+            title={t('mol.recenter')}
+          >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -114,7 +305,7 @@ export const MolViewer: React.FC<MolViewerProps> = ({
         <span className="h-5 w-px self-center bg-white/10" />
 
         <div className="flex items-center space-x-1.5">
-          {(['plddt', 'chain'] as const).map((mode) => (
+          {(['plddt', 'chain', 'hydrophobicity'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => handleColorModeChange(mode)}

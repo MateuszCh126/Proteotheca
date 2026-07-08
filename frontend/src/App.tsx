@@ -12,6 +12,8 @@ import LanguageSwitcher from './components/LanguageSwitcher/LanguageSwitcher';
 import SaveProjectDialog from './components/Projects/SaveProjectDialog';
 import SavedProjectsPanel from './components/Projects/SavedProjectsPanel';
 import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/mockData';
+import { apiJson } from './api/client';
+
 import { Activity, Database, FolderOpen, LogIn, Save, UserPlus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useI18n } from './context/I18nContext';
@@ -44,10 +46,27 @@ export const App: React.FC = () => {
 
   // Pre-load default state for demonstration and testing (BRAF V600E / Melanoma discovery)
   useEffect(() => {
-    setLoadedGene(mockGenes.BRAF);
-    setLoadedVariant(mockVariants.rs113488022);
-    setLoadedDisease(mockDiseases.Melanoma);
-    setLoadedLiterature(mockLiterature.BRAF);
+    const fetchDefaultState = async () => {
+      try {
+        const [gene, variant, disease, literature] = await Promise.all([
+          apiJson<any>('/api/genes/BRAF'),
+          apiJson<any>('/api/variants/rs113488022'),
+          apiJson<any>('/api/diseases/Melanoma'),
+          apiJson<any>('/api/literature?query=BRAF'),
+        ]);
+        setLoadedGene(gene);
+        setLoadedVariant(variant);
+        setLoadedDisease(disease);
+        setLoadedLiterature(literature);
+      } catch (err) {
+        console.warn('Failed to fetch initial default state from backend API. Falling back to local mock data.', err);
+        setLoadedGene(mockGenes.BRAF);
+        setLoadedVariant(mockVariants.rs113488022);
+        setLoadedDisease(mockDiseases.Melanoma);
+        setLoadedLiterature(mockLiterature.BRAF);
+      }
+    };
+    fetchDefaultState();
   }, []);
 
   const currentProjectState = {
@@ -90,101 +109,127 @@ export const App: React.FC = () => {
   const handleSearch = async (query: string, type: 'gene' | 'variant' | 'disease' | 'unknown') => {
     setIsLoading(true);
     setError(null);
-    
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const upperQuery = query.toUpperCase();
-    const lowerQuery = query.toLowerCase();
 
-    if (type === 'gene') {
-      const gene = mockGenes[upperQuery];
-      if (!gene) {
-        setError(t('search.errorGeneNotFound', { query }));
-        setIsLoading(false);
-        return;
-      }
-      setLoadedGene(gene);
-      setLoadedVariant(null); // Clear variant impact
-      
-      const lit = mockLiterature[upperQuery] || { query: upperQuery, pubmed: [], biorxiv: [], openalex: [] };
-      setLoadedLiterature(lit);
-      
-      if (gene.opentargets.associations.length > 0) {
-        const topAssoc = gene.opentargets.associations[0];
-        const disease = mockDiseases[topAssoc.disease_name];
-        if (disease) {
-          setLoadedDisease(disease);
+    try {
+      if (type === 'gene') {
+        let gene: any = null;
+        try {
+          gene = await apiJson<any>(`/api/genes/${encodeURIComponent(query)}`);
+        } catch (err: any) {
+          setError(err.message || t('search.errorGeneNotFound', { query }));
+          setIsLoading(false);
+          return;
         }
-      }
-    } else if (type === 'variant') {
-      const variant = mockVariants[lowerQuery];
-      if (!variant) {
-        setError(t('search.errorVariantNotFound', { query }));
-        setIsLoading(false);
-        return;
-      }
-      setLoadedVariant(variant);
-      
-      const primaryEqtl = variant.gtex.eqtls.find(e => e.gene_symbol);
-      if (primaryEqtl) {
-        const targetGene = mockGenes[primaryEqtl.gene_symbol];
-        if (targetGene) {
-          setLoadedGene(targetGene);
-          
-          const lit = mockLiterature[primaryEqtl.gene_symbol];
-          if (lit) setLoadedLiterature(lit);
-          
-          if (targetGene.opentargets.associations.length > 0) {
+
+        setLoadedGene(gene);
+        setLoadedVariant(null); // Clear variant impact
+
+        // Fetch literature
+        try {
+          const lit = await apiJson<any>(`/api/literature?query=${encodeURIComponent(query)}`);
+          setLoadedLiterature(lit);
+        } catch {
+          setLoadedLiterature({ query, pubmed: [], biorxiv: [], openalex: [] });
+        }
+
+        // Fetch associated disease if available
+        if (gene.opentargets?.associations?.length > 0) {
+          const topAssoc = gene.opentargets.associations[0];
+          try {
+            const disease = await apiJson<any>(`/api/diseases/${encodeURIComponent(topAssoc.disease_name)}`);
+            setLoadedDisease(disease);
+          } catch {
+            setLoadedDisease(null);
+          }
+        } else {
+          setLoadedDisease(null);
+        }
+      } else if (type === 'variant') {
+        let variant: any = null;
+        try {
+          variant = await apiJson<any>(`/api/variants/${encodeURIComponent(query)}`);
+        } catch (err: any) {
+          setError(err.message || t('search.errorVariantNotFound', { query }));
+          setIsLoading(false);
+          return;
+        }
+
+        setLoadedVariant(variant);
+
+        const primaryEqtl = variant.gtex?.eqtls?.find((e: any) => e.gene_symbol);
+        if (primaryEqtl) {
+          let targetGene: any = null;
+          try {
+            targetGene = await apiJson<any>(`/api/genes/${encodeURIComponent(primaryEqtl.gene_symbol)}`);
+            setLoadedGene(targetGene);
+          } catch {
+            setLoadedGene(null);
+          }
+
+          try {
+            const lit = await apiJson<any>(`/api/literature?query=${encodeURIComponent(primaryEqtl.gene_symbol)}`);
+            setLoadedLiterature(lit);
+          } catch {
+            setLoadedLiterature({ query: primaryEqtl.gene_symbol, pubmed: [], biorxiv: [], openalex: [] });
+          }
+
+          if (targetGene && targetGene.opentargets?.associations?.length > 0) {
             const topAssoc = targetGene.opentargets.associations[0];
-            const disease = mockDiseases[topAssoc.disease_name];
-            if (disease) setLoadedDisease(disease);
+            try {
+              const disease = await apiJson<any>(`/api/diseases/${encodeURIComponent(topAssoc.disease_name)}`);
+              setLoadedDisease(disease);
+            } catch {
+              setLoadedDisease(null);
+            }
+          } else {
+            setLoadedDisease(null);
           }
+        } else {
+          setLoadedGene(null);
+          setLoadedLiterature(null);
+          setLoadedDisease(null);
         }
-      }
-    } else if (type === 'disease') {
-      const key = Object.keys(mockDiseases).find(
-        k => k.toLowerCase() === lowerQuery
-      );
-      const disease = key ? mockDiseases[key] : null;
-      if (!disease) {
-        setError(t('search.errorDiseaseRecognizedButMissing', { query, examples: Object.keys(mockDiseases).join(', ') }));
-        setIsLoading(false);
-        return;
-      }
-      setLoadedDisease(disease);
-      setLoadedVariant(null); // Clear variant impact
-      
-      const lit = mockLiterature[disease.disease_name] || {
-        query: disease.disease_name,
-        pubmed: [
-          {
-            pmid: "99001122",
-            title: `Advanced Genomic Investigation in ${disease.disease_name}`,
-            authors: "Explorer Group, BioMed Institute",
-            journal: "Journal of Precision Medicine",
-            pub_date: "2023-05-18",
-            abstract: `Abstract detailing the latest drug developments and molecular pathways for ${disease.disease_name}.`,
-            doi: `10.1234/jpm.2023.${disease.disease_name.toLowerCase().replace(/\s+/g, '-')}`
+      } else if (type === 'disease') {
+        let disease: any = null;
+        try {
+          disease = await apiJson<any>(`/api/diseases/${encodeURIComponent(query)}`);
+        } catch (err: any) {
+          setError(err.message || t('search.errorDiseaseRecognizedButMissing', { query, examples: 'Melanoma, Breast Cancer' }));
+          setIsLoading(false);
+          return;
+        }
+
+        setLoadedDisease(disease);
+        setLoadedVariant(null); // Clear variant impact
+
+        try {
+          const lit = await apiJson<any>(`/api/literature?query=${encodeURIComponent(query)}`);
+          setLoadedLiterature(lit);
+        } catch {
+          setLoadedLiterature({ query, pubmed: [], biorxiv: [], openalex: [] });
+        }
+
+        if (disease.opentargets?.associated_genes?.length > 0) {
+          const topGeneSymbol = disease.opentargets.associated_genes[0].symbol;
+          try {
+            const gene = await apiJson<any>(`/api/genes/${encodeURIComponent(topGeneSymbol)}`);
+            setLoadedGene(gene);
+          } catch {
+            setLoadedGene(null);
           }
-        ],
-        biorxiv: [],
-        openalex: []
-      };
-      setLoadedLiterature(lit);
-      
-      if (disease.opentargets.associated_genes.length > 0) {
-        const topGeneSymbol = disease.opentargets.associated_genes[0].symbol;
-        const gene = mockGenes[topGeneSymbol];
-        if (gene) {
-          setLoadedGene(gene);
+        } else {
+          setLoadedGene(null);
         }
+      } else {
+        setError(t('search.errorUnknown'));
       }
-    } else {
-      setError(t('search.errorUnknown'));
+    } catch (err: any) {
+      setError(err?.message || t('search.errorUnknown'));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
+
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-cyan-500/30 relative">
@@ -242,16 +287,16 @@ export const App: React.FC = () => {
           <div className="w-full md:max-w-xl">
             <SearchBar onSearch={handleSearch} isLoading={isLoading} error={error} />
           </div>
-          {user && (
-            <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
-              <button
-                type="button"
-                onClick={() => setShowSavedProjects(true)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10 sm:flex-none"
-              >
-                <FolderOpen className="h-3.5 w-3.5" />
-                {t('projects.savedProjects')}
-              </button>
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+            <button
+              type="button"
+              onClick={() => setShowSavedProjects(true)}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10 sm:flex-none"
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+              {t('projects.savedProjects')}
+            </button>
+            {!showSaveProject && (
               <button
                 type="button"
                 onClick={() => setShowSaveProject(true)}
@@ -260,8 +305,8 @@ export const App: React.FC = () => {
                 <Save className="h-3.5 w-3.5" />
                 {t('projects.saveProject')}
               </button>
-            </div>
-          )}
+            )}
+          </div>
           <div className="text-right hidden md:block">
             <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">{t('nav.activeSessionTarget')}</span>
             <span className="text-xs font-bold text-white font-outfit mt-0.5 block">

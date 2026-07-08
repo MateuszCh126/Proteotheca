@@ -10,7 +10,7 @@ interface PublicationCardProps {
   pubDate: string;
   abstract: string;
   doi?: string;
-  source: 'pubmed' | 'biorxiv' | 'openalex';
+  source: 'pubmed' | 'biorxiv' | 'openalex' | 'arxiv' | 'europepmc';
 }
 
 export const PublicationCard: React.FC<PublicationCardProps> = ({
@@ -38,10 +38,12 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
   let badgeColor = 'bg-blue-500/15 text-blue-400 border-blue-500/20';
   if (source === 'biorxiv') badgeColor = 'bg-amber-500/15 text-amber-400 border-amber-500/20';
   if (source === 'openalex') badgeColor = 'bg-violet-500/15 text-violet-400 border-violet-500/20';
+  if (source === 'arxiv') badgeColor = 'bg-red-500/15 text-red-400 border-red-500/20';
+  if (source === 'europepmc') badgeColor = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
 
   return (
     <div
-      data-testid="literature-card"
+      data-testid="publication-card"
       className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-2.5 hover:border-white/10 transition-all cursor-pointer"
       onClick={() => setIsExpanded(prev => !prev)}
     >

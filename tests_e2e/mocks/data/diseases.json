@@ -56,6 +56,78 @@
       ]
     }
   },
+  "Lung Cancer": {
+    "disease_name": "Lung Cancer",
+    "opentargets": {
+      "associated_genes": [
+        { "symbol": "EGFR", "score": 0.92 },
+        { "symbol": "KRAS", "score": 0.87 },
+        { "symbol": "ALK", "score": 0.84 },
+        { "symbol": "TP53", "score": 0.79 }
+      ]
+    },
+    "chembl": {
+      "active_compounds": [
+        { "chembl_id": "CHEMBL28357", "name": "GEFITINIB", "ic50_nm": 3.2 },
+        { "chembl_id": "CHEMBL1489", "name": "ERLOTINIB", "ic50_nm": 2.1 },
+        { "chembl_id": "CHEMBL3137343", "name": "OSIMERTINIB", "ic50_nm": 0.6 },
+        { "chembl_id": "CHEMBL3813872", "name": "ALECTINIB", "ic50_nm": 1.8 }
+      ]
+    },
+    "clinical_trials": {
+      "trial_count": 285,
+      "trials": [
+        { "nct_id": "NCT02296138", "title": "Osimertinib Versus Gefitinib/Erlotinib in EGFR Mutation-Positive Lung Cancer", "status": "COMPLETED" },
+        { "nct_id": "NCT03521154", "title": "Study of Osimertinib in EGFR-Mutant Non-Small Cell Lung Cancer", "status": "ACTIVE_NOT_RECRUITING" },
+        { "nct_id": "NCT04762459", "title": "Combination EGFR Inhibitors in Metastasized Lung Adenocarcinoma", "status": "RECRUITING" }
+      ]
+    },
+    "openfda": {
+      "active_substance": "OSIMERTINIB",
+      "total_reports": 12450,
+      "events": [
+        { "term": "Diarrhoea", "count": 3510 },
+        { "term": "Dry skin", "count": 2890 },
+        { "term": "Nail toxicity", "count": 2450 },
+        { "term": "Rash", "count": 2120 },
+        { "term": "Fatigue", "count": 1850 },
+        { "term": "Cough", "count": 1450 },
+        { "term": "Stomatitis", "count": 1300 },
+        { "term": "Pruritus", "count": 1100 },
+        { "term": "Paronychia", "count": 980 },
+        { "term": "Interstit. lung disease", "count": 320 }
+      ],
+      "sex_breakdown": [
+        { "name": "Female", "value": 7120 },
+        { "name": "Male", "value": 5100 },
+        { "name": "Unknown", "value": 230 }
+      ],
+      "age_breakdown": [
+        { "name": "18-44 years", "value": 1200 },
+        { "name": "45-64 years", "value": 4320 },
+        { "name": "65-74 years", "value": 4850 },
+        { "name": "75+ years", "value": 2080 }
+      ]
+    },
+    "pubchem": {
+      "cid": 71496896,
+      "name": "OSIMERTINIB",
+      "formula": "C28H33N7O2",
+      "smiles": "CN1CCN(CC1)C2=CC(=C(C=C2)NC3=NC=CC(=N3)C4=CN(C5=CC=CC=C54)C)NC(=O)C=C",
+      "weight": 499.6
+    },
+    "ols": {
+      "obo_id": "DOID:1324",
+      "label": "lung cancer",
+      "description": ["An organ system cancer that starts in the lungs and is characterized by uncontrolled cell growth."],
+      "path": ["disease", "neoplasm", "cancer", "thoracic cancer", "lung cancer"]
+    },
+    "encode": {
+      "ccres": [
+        { "accession": "EH38E2777124", "chrom": "chr7", "start": 55191000, "len": 400, "pct": "PLS" }
+      ]
+    }
+  },
   "Breast Cancer": {
     "disease_name": "Breast Cancer",
     "opentargets": {

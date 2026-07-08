@@ -29,6 +29,55 @@ export const mockGenes: Record<string, GeneData> = {
         { disease_id: "EFO_0000311", disease_name: "Colorectal Cancer", score: 0.82 },
         { disease_id: "EFO_0000305", disease_name: "Thyroid Carcinoma", score: 0.78 }
       ]
+    },
+    alphafold: {
+      uniprot_id: "P15056",
+      entryId: "AF-P15056-F1",
+      pdbUrl: "https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v4.pdb",
+      plddt_summary: {
+        very_high: 68.5,
+        confident: 18.3,
+        low: 8.2,
+        very_low: 5.0
+      }
+    },
+    hpa: {
+      symbol: "BRAF",
+      expression: [
+        { tissue: "Cerebellum", level: "Medium", reliability: "Approved" },
+        { tissue: "Cortex", level: "High", reliability: "Approved" },
+        { tissue: "Testis", level: "High", reliability: "Supported" }
+      ],
+      localization: ["Cytoplasm", "Nucleus"]
+    },
+    interpro: {
+      uniprot_id: "P15056",
+      domains: [
+        { accession: "IPR001367", name: "Protein kinase domain", start: 457, end: 717 },
+        { accession: "IPR000980", name: "Serine/threonine-protein kinase, active site", start: 574, end: 586 }
+      ]
+    },
+    ncbi_seq: {
+      accession: "NM_004333.6",
+      fasta: `>NM_004333.6 Homo sapiens B-Raf proto-oncogene, serine/threonine kinase (BRAF), mRNA
+CGCCTCCCTTCCCCCTCCCCGCCCGACAGCGGCGGCGGCTCAGCGGCTCGGCTCTCGGGGGCGGCGGGCG
+GCGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGG
+GGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCG
+GGCGGCTGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGC`
+    },
+    quickgo: {
+      uniprot_id: "P15056",
+      annotations: [
+        { go_id: "GO:0004702", go_name: "MAP kinase kinase kinase activity", evidence_code: "IDA" },
+        { go_id: "GO:0007243", go_name: "protein intracellular signaling cascade", evidence_code: "IEA" }
+      ]
+    },
+    reactome: {
+      uniprot_id: "P15056",
+      pathways: [
+        { dbId: 5673001, displayName: "RAF/MAP kinase cascade", stId: "R-HSA-5673001" },
+        { dbId: 1989781, displayName: "Signaling by BRAF", stId: "R-HSA-1989781" }
+      ]
     }
   },
   EGFR: {
@@ -52,6 +101,54 @@ export const mockGenes: Record<string, GeneData> = {
         { disease_id: "EFO_0000311", disease_name: "Colorectal Cancer", score: 0.76 },
         { disease_id: "EFO_0000174", disease_name: "Glioblastoma Multiforme", score: 0.88 }
       ]
+    },
+    alphafold: {
+      uniprot_id: "P00533",
+      entryId: "AF-P00533-F1",
+      pdbUrl: "https://alphafold.ebi.ac.uk/files/AF-P00533-F1-model_v4.pdb",
+      plddt_summary: {
+        very_high: 80.2,
+        confident: 12.1,
+        low: 5.4,
+        very_low: 2.3
+      }
+    },
+    hpa: {
+      symbol: "EGFR",
+      expression: [
+        { tissue: "Cortex", level: "Medium", reliability: "Approved" },
+        { tissue: "Placenta", level: "High", reliability: "Approved" }
+      ],
+      localization: ["Plasma membrane", "Cytoplasm"]
+    },
+    interpro: {
+      uniprot_id: "P00533",
+      domains: [
+        { accession: "IPR001367", name: "Protein kinase domain", start: 712, end: 968 },
+        { accession: "IPR003103", name: "Receptor L-domain", start: 57, end: 168 }
+      ]
+    },
+    ncbi_seq: {
+      accession: "NM_005228.5",
+      fasta: `>NM_005228.5 Homo sapiens epidermal growth factor receptor (EGFR), transcript variant 1, mRNA
+CCCCGGCGCAGCGCGGCCGCAGCAGCCTCCGCCCCCCGCACGGCGTGAGCGGGGCGTGACCGAGGGCGCG
+CGCGGCGCGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGG
+GGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCG
+GGCGGCTGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGGCGGGGC`
+    },
+    quickgo: {
+      uniprot_id: "P00533",
+      annotations: [
+        { go_id: "GO:0004714", go_name: "transmembrane receptor protein tyrosine kinase activity", evidence_code: "IDA" },
+        { go_id: "GO:0007173", go_name: "epidermal growth factor receptor signaling pathway", evidence_code: "IMP" }
+      ]
+    },
+    reactome: {
+      uniprot_id: "P00533",
+      pathways: [
+        { dbId: 177929, displayName: "Signaling by EGFR", stId: "R-HSA-177929" },
+        { dbId: 1250296, displayName: "SHC1 events in EGFR signaling", stId: "R-HSA-1250296" }
+      ]
     }
   },
   TP53: {
@@ -74,6 +171,54 @@ export const mockGenes: Record<string, GeneData> = {
         { disease_id: "EFO_0000311", disease_name: "Colorectal Cancer", score: 0.85 },
         { disease_id: "EFO_0000571", disease_name: "Lung Cancer", score: 0.79 },
         { disease_id: "EFO_0000305", disease_name: "Thyroid Carcinoma", score: 0.61 }
+      ]
+    },
+    alphafold: {
+      uniprot_id: "P04637",
+      entryId: "AF-P04637-F1",
+      pdbUrl: "https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v4.pdb",
+      plddt_summary: {
+        very_high: 42.1,
+        confident: 25.4,
+        low: 18.2,
+        very_low: 14.3
+      }
+    },
+    hpa: {
+      symbol: "TP53",
+      expression: [
+        { tissue: "Lymph node", level: "High", reliability: "Approved" },
+        { tissue: "Spleen", level: "High", reliability: "Approved" }
+      ],
+      localization: ["Nucleus"]
+    },
+    interpro: {
+      uniprot_id: "P04637",
+      domains: [
+        { accession: "IPR002117", name: "p53 DNA-binding domain", start: 95, end: 289 },
+        { accession: "IPR008967", name: "p53 tetramerisation domain", start: 325, end: 356 }
+      ]
+    },
+    ncbi_seq: {
+      accession: "NM_000546.6",
+      fasta: `>NM_000546.6 Homo sapiens tumor protein p53 (TP53), transcript variant 1, mRNA
+GATGGGATTGGGGTTTTCCCCTCCCATGTGCTCAAGACTGGCGCTAAAAGTATGGCCATCGTGGGCTTTG
+TAAATATAAATATGTAAATATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTT
+TACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACC
+ATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGGTTTTACCATGG`
+    },
+    quickgo: {
+      uniprot_id: "P04637",
+      annotations: [
+        { go_id: "GO:0003700", go_name: "DNA-binding transcription factor activity", evidence_code: "IDA" },
+        { go_id: "GO:0006915", go_name: "apoptotic process", evidence_code: "IMP" }
+      ]
+    },
+    reactome: {
+      uniprot_id: "P04637",
+      pathways: [
+        { dbId: 5633007, displayName: "Regulation of TP53 Activity", stId: "R-HSA-5633007" },
+        { dbId: 111471, displayName: "Transcription of cell cycle genes by p53", stId: "R-HSA-111471" }
       ]
     }
   }
@@ -111,6 +256,51 @@ export const mockVariants: Record<string, VariantData> = {
         { tissue: "Muscle - Skeletal", gene_symbol: "BRAF", p_value: 0.45, nes: -0.02 },
         { tissue: "Colon - Transverse", gene_symbol: "BRAF", p_value: 0.004, nes: -0.18 }
       ]
+    },
+    alphagenome: {
+      variant_id: "rs113488022",
+      predictions: [
+        { biosample_name: "Skin - Sun Exposed (Lower leg)", output_type: "DNASE", quantile_score: 0.98, raw_score: 2.45 },
+        { biosample_name: "Melanoma cell line", output_type: "H3K27ac", quantile_score: 0.94, raw_score: 1.88 }
+      ]
+    },
+    dbsnp: {
+      rsid: "rs113488022",
+      chromosome: "chr7",
+      position: 140753336,
+      ref: "A",
+      alt: "T",
+      gene: "BRAF"
+    },
+    ucsc: {
+      coordinate: "chr7:140753336",
+      phylop: 7.23,
+      phastcons: 0.999,
+      tfbs_overlaps: [
+        { tf_name: "JUN", score: 850 },
+        { tf_name: "FOS", score: 620 }
+      ]
+    },
+    unibind: {
+      tf_name: "JUN",
+      datasets: [
+        { dataset_id: "ENCSR000EGM", species: "Homo sapiens", cell_line: "K562", count: 120 }
+      ]
+    },
+    jaspar: {
+      symbol: "JUN",
+      profiles: [
+        {
+          matrix_id: "MA0488.1",
+          name: "JUN",
+          pfm: {
+            A: [10, 20, 5, 80, 5, 5, 10],
+            C: [20, 10, 80, 5, 5, 5, 20],
+            G: [50, 60, 5, 5, 80, 80, 10],
+            T: [20, 10, 10, 10, 10, 10, 60]
+          }
+        }
+      ]
     }
   },
   rs121434568: {
@@ -136,6 +326,51 @@ export const mockVariants: Record<string, VariantData> = {
         { tissue: "Whole Blood", gene_symbol: "EGFR", p_value: 0.35, nes: 0.01 },
         { tissue: "Esophagus - Mucosa", gene_symbol: "EGFR", p_value: 2.1e-6, nes: 0.33 },
         { tissue: "Colon - Sigmoid", gene_symbol: "EGFR", p_value: 1.2e-3, nes: -0.21 }
+      ]
+    },
+    alphagenome: {
+      variant_id: "rs121434568",
+      predictions: [
+        { biosample_name: "Lung tissue", output_type: "DNASE", quantile_score: 0.99, raw_score: 3.12 },
+        { biosample_name: "Lung adenocarcinoma", output_type: "H3K4me3", quantile_score: 0.97, raw_score: 2.85 }
+      ]
+    },
+    dbsnp: {
+      rsid: "rs121434568",
+      chromosome: "chr7",
+      position: 55191822,
+      ref: "T",
+      alt: "G",
+      gene: "EGFR"
+    },
+    ucsc: {
+      coordinate: "chr7:55191822",
+      phylop: 6.45,
+      phastcons: 0.995,
+      tfbs_overlaps: [
+        { tf_name: "E2F1", score: 780 },
+        { tf_name: "MYC", score: 540 }
+      ]
+    },
+    unibind: {
+      tf_name: "E2F1",
+      datasets: [
+        { dataset_id: "ENCSR000EHU", species: "Homo sapiens", cell_line: "HeLa-S3", count: 95 }
+      ]
+    },
+    jaspar: {
+      symbol: "E2F1",
+      profiles: [
+        {
+          matrix_id: "MA0024.1",
+          name: "E2F1",
+          pfm: {
+            A: [5, 10, 50, 80, 5, 20, 10],
+            C: [80, 80, 5, 5, 90, 10, 20],
+            G: [5, 5, 40, 5, 0, 60, 60],
+            T: [10, 5, 5, 10, 5, 10, 10]
+          }
+        }
       ]
     }
   }
@@ -200,6 +435,24 @@ export const mockDiseases: Record<string, DiseaseData> = {
         { name: "65-74 years", value: 5850 },
         { name: "75+ years", value: 3100 }
       ]
+    },
+    pubchem: {
+      cid: 501254,
+      name: "DABRAFENIB",
+      formula: "C23H20F3N8O2S2",
+      smiles: "CC(C)(C)c1nc(s1)-c2cc(cc(c2F)S(=O)(=O)Nc3c(F)cccc3F)n4cnc5c4cc(cn5)C",
+      weight: 519.6
+    },
+    ols: {
+      obo_id: "DOID:1909",
+      label: "melanoma",
+      description: ["A hyperplastic disease characterized by a malignant tumor originating from melanocytes."],
+      path: ["disease", "neoplasm", "cancer", "skin cancer", "melanoma"]
+    },
+    encode: {
+      ccres: [
+        { accession: "EH38E2777123", chrom: "chr7", start: 140753000, len: 350, pct: "pELS" }
+      ]
     }
   },
   "Lung Cancer": {
@@ -254,6 +507,24 @@ export const mockDiseases: Record<string, DiseaseData> = {
         { name: "65-74 years", value: 4850 },
         { name: "75+ years", value: 2080 }
       ]
+    },
+    pubchem: {
+      cid: 71496896,
+      name: "OSIMERTINIB",
+      formula: "C28H33N7O2",
+      smiles: "CN1CCN(CC1)C2=CC(=C(C=C2)NC3=NC=CC(=N3)C4=CN(C5=CC=CC=C54)C)NC(=O)C=C",
+      weight: 499.6
+    },
+    ols: {
+      obo_id: "DOID:1324",
+      label: "lung cancer",
+      description: ["An organ system cancer that starts in the lungs and is characterized by uncontrolled cell growth."],
+      path: ["disease", "neoplasm", "cancer", "thoracic cancer", "lung cancer"]
+    },
+    encode: {
+      ccres: [
+        { accession: "EH38E2777124", chrom: "chr7", start: 55191000, len: 400, pct: "PLS" }
+      ]
     }
   },
   "Colorectal Cancer": {
@@ -304,6 +575,24 @@ export const mockDiseases: Record<string, DiseaseData> = {
         { name: "65-74 years", value: 4950 },
         { name: "75+ years", value: 1930 }
       ]
+    },
+    pubchem: {
+      cid: 118704207,
+      name: "REGORAFENIB",
+      formula: "C21H15ClF4N4O3",
+      smiles: "CNC(=O)C1=NC=CC(=C1)OC2=CC(=C(C=C2)NC(=O)NC3=CC(=C(C=C3F)Cl)C(F)(F)F)F",
+      weight: 482.8
+    },
+    ols: {
+      obo_id: "DOID:9256",
+      label: "colorectal cancer",
+      description: ["A colorectal neoplasm characterized by a malignant tumor in the colon or rectum."],
+      path: ["disease", "neoplasm", "cancer", "gastrointestinal cancer", "colorectal cancer"]
+    },
+    encode: {
+      ccres: [
+        { accession: "EH38E2777125", chrom: "chr17", start: 7673000, len: 280, pct: "dELS" }
+      ]
     }
   }
 };
@@ -352,6 +641,25 @@ export const mockLiterature: Record<string, LiteratureData> = {
         abstract: "We analyze BRAF V600E and non-V600E mutations across non-small cell lung cancer, anaplastic thyroid cancer, and cholangiocarcinoma. High response rates to Dabrafenib combination therapies suggest tissue-agnostic utility for BRAF inhibitors.",
         doi: "10.1158/2159-8290.CD-19-0345"
       }
+    ],
+    arxiv: [
+      {
+        id: "2005.12345",
+        title: "Deep Learning Approaches for Modeling BRAF Kinase Conformation Transitions",
+        authors: "Wang X, Zhang Y",
+        pub_date: "2020-05-18",
+        abstract: "We model active and inactive states of BRAF kinase using molecular dynamics and deep neural networks to identify transient pocket bindings."
+      }
+    ],
+    europepmc: [
+      {
+        pmcid: "PMC7891234",
+        title: "Targeting BRAF Mutant Cancers: A Comprehensive Clinical Update",
+        authors: "Green L, Brown T",
+        journal: "European Journal of Cancer",
+        pub_date: "2021-03-15",
+        abstract: "This review covers recent clinical trial approvals for Encorafenib, Dabrafenib, and next-generation BRAF inhibitors, detailing adverse event profiles and survival endpoints."
+      }
     ]
   },
   EGFR: {
@@ -385,6 +693,25 @@ export const mockLiterature: Record<string, LiteratureData> = {
         abstract: "EGFR activating mutations in the kinase domain, including L858R and exon 19 deletions, alter the asymmetric dimer interface, leading to ligand-independent activation. We present structural insights explaining differential inhibitor sensitivity.",
         doi: "10.1016/j.cell.2019.02.011"
       }
+    ],
+    arxiv: [
+      {
+        id: "1903.09876",
+        title: "Machine Learning Predicts EGFR Kinase Domain Mutation Resistance to Osimertinib",
+        authors: "Li M, Liu J",
+        pub_date: "2019-03-12",
+        abstract: "We apply structural classification algorithms to a panel of 45 EGFR secondary mutations, predicting resistance profiles to osimertinib with high accuracy."
+      }
+    ],
+    europepmc: [
+      {
+        pmcid: "PMC6203987",
+        title: "EGFR Mutations in Non-Small-Cell Lung Cancer: Analysis of Clinical Trial Data",
+        authors: "White K, Miller R",
+        journal: "Lancet Oncology",
+        pub_date: "2018-09-01",
+        abstract: "A pooled analysis of major trials comparing tyrosine kinase inhibitors in EGFR-mutated NSCLC, focusing on progression-free survival and secondary mutation profiles."
+      }
     ]
   },
   TP53: {
@@ -417,6 +744,25 @@ export const mockLiterature: Record<string, LiteratureData> = {
         pub_date: "2020-04-12",
         abstract: "Alternatively spliced isoforms of p53 modulate the canonical tumor suppressor activity. Expression patterns of p53 beta/gamma correlate with clinical prognosis in breast cancer and leukemia.",
         doi: "10.1038/s41416-020-0822-z"
+      }
+    ],
+    arxiv: [
+      {
+        id: "2301.05432",
+        title: "Geometric Deep Learning for Predicting p53 Mutant Rescuing Small Molecules",
+        authors: "Al-Rashed M, Smith R",
+        pub_date: "2023-01-20",
+        abstract: "Using geometric graph neural networks on the p53 DNA-binding domain, we identify novel chemical scaffolds capable of stabilizing mutant p53 in a transcriptionally active conformation."
+      }
+    ],
+    europepmc: [
+      {
+        pmcid: "PMC8109876",
+        title: "TP53 in Cancer: Clinical Significance, Prognostic Value, and Therapeutic Opportunities",
+        authors: "Taylor A, Johnson D",
+        journal: "Clinical Cancer Research",
+        pub_date: "2021-02-01",
+        abstract: "A review of the prognostic role of TP53 mutations across solid tumors and hematological malignancies, with a focus on targetable pathways and APR-246 clinical progress."
       }
     ]
   }

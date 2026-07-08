@@ -13,7 +13,7 @@ interface VariantPanelProps {
 
 export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoading }) => {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'clinvar' | 'gnomad' | 'gtex'>('clinvar');
+  const [activeTab, setActiveTab] = useState<'clinvar' | 'gnomad' | 'gtex' | 'alphagenome' | 'dbsnp' | 'ucsc' | 'unibind' | 'jaspar'>('clinvar');
 
   if (isLoading) {
     return (
@@ -56,20 +56,25 @@ export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoadi
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/5 pb-px">
-        {(['clinvar', 'gnomad', 'gtex'] as const).map((tab) => {
+      <div className="flex flex-wrap border-b border-white/5 pb-px gap-1">
+        {(['clinvar', 'gnomad', 'gtex', 'alphagenome', 'dbsnp', 'ucsc', 'unibind', 'jaspar'] as const).map((tab) => {
           const isActive = activeTab === tab;
           let label = '';
           if (tab === 'clinvar') label = t('variant.clinvar');
           if (tab === 'gnomad') label = t('variant.gnomadFrequency');
           if (tab === 'gtex') label = t('variant.gtexEqtls');
+          if (tab === 'alphagenome') label = t('variant.alphagenome');
+          if (tab === 'dbsnp') label = t('variant.dbsnp');
+          if (tab === 'ucsc') label = t('variant.ucsc');
+          if (tab === 'unibind') label = t('variant.unibind');
+          if (tab === 'jaspar') label = t('variant.jaspar');
 
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               data-testid={`tab-trigger-variant-${tab}`}
-              className={`px-3 py-1.5 text-xs font-semibold tracking-tight border-b-2 transition-all mr-4 relative -bottom-px ${
+              className={`px-2 py-1 text-3xs font-semibold tracking-tight border-b-2 transition-all mr-2 relative -bottom-px ${
                 isActive
                   ? 'border-accent-violet text-white font-bold'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -93,6 +98,189 @@ export const VariantPanel: React.FC<VariantPanelProps> = ({ variantData, isLoadi
 
         {activeTab === 'gtex' && (
           <GtexHeatmap eqtls={variantData.gtex.eqtls} />
+        )}
+
+        {activeTab === 'alphagenome' && (
+          <div className="space-y-3">
+            <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+              AlphaGenome Variant Regulatory Predictions
+            </span>
+            {variantData.alphagenome ? (
+              <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                {variantData.alphagenome.predictions.map((pred, idx) => (
+                  <div key={idx} className="p-2.5 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center text-2xs hover:border-violet-500/20 transition-all">
+                    <div>
+                      <span className="font-bold text-white block">{pred.biosample_name}</span>
+                      <span className="text-3xs font-mono text-slate-500">Output: {pred.output_type}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-3xs text-slate-400 block mb-0.5">Quantile Score</span>
+                      <span className="font-mono text-violet-400 font-bold">{(pred.quantile_score * 100).toFixed(1)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 italic">No AlphaGenome predictions loaded.</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'dbsnp' && (
+          <div className="space-y-3">
+            <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+              dbSNP Variant Mapping
+            </span>
+            {variantData.dbsnp ? (
+              <div className="p-3.5 bg-white/5 rounded-xl border border-white/5 space-y-2.5 text-2xs">
+                <div className="grid grid-cols-2 gap-2 font-mono">
+                  <div className="p-2 bg-white/5 rounded">
+                    <span className="text-slate-500 block text-3xs">rsID</span>
+                    <span className="text-white font-bold">{variantData.dbsnp.rsid}</span>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded">
+                    <span className="text-slate-500 block text-3xs">Chromosome</span>
+                    <span className="text-white font-bold">{variantData.dbsnp.chromosome}</span>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded">
+                    <span className="text-slate-500 block text-3xs">Position (GRCh38)</span>
+                    <span className="text-white font-bold">{variantData.dbsnp.position}</span>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded">
+                    <span className="text-slate-500 block text-3xs">Allele Change</span>
+                    <span className="text-white font-bold text-cyan-400">{variantData.dbsnp.ref} &gt; {variantData.dbsnp.alt}</span>
+                  </div>
+                </div>
+                <div className="p-2 bg-white/5 rounded flex justify-between items-center">
+                  <span className="text-slate-500 text-3xs font-mono">Associated Gene</span>
+                  <span className="font-bold text-white bg-violet-500/10 border border-violet-500/20 px-1.5 py-0.5 rounded text-3xs font-mono">{variantData.dbsnp.gene}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 italic">No dbSNP mapping loaded.</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'ucsc' && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+                UCSC Conservation & TFBS Overlaps
+              </span>
+              {variantData.ucsc && (
+                <span className="text-3xs font-mono bg-white/5 text-slate-400 px-1.5 py-0.5 rounded border border-white/5">
+                  {variantData.ucsc.coordinate}
+                </span>
+              )}
+            </div>
+            {variantData.ucsc ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-2xs font-mono">
+                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 flex justify-between">
+                    <span className="text-slate-500">phyloP Score:</span>
+                    <span className="font-bold text-violet-400">{variantData.ucsc.phylop.toFixed(2)}</span>
+                  </div>
+                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 flex justify-between">
+                    <span className="text-slate-500">phastCons:</span>
+                    <span className="font-bold text-violet-400">{variantData.ucsc.phastcons.toFixed(3)}</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-3xs text-slate-400 block mb-0.5">Overlapping Transcription Factor Bindings</span>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar pr-1">
+                    {variantData.ucsc.tfbs_overlaps.map((tfbs, idx) => (
+                      <div key={idx} className="p-2 bg-white/5 rounded border border-white/5 flex justify-between items-center text-2xs font-mono">
+                        <span className="font-bold text-white">{tfbs.tf_name}</span>
+                        <span className="text-slate-400">Score: {tfbs.score}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 italic">No UCSC conservation data loaded.</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'unibind' && (
+          <div className="space-y-3">
+            <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+              UniBind Validated TF-DNA Interactions
+            </span>
+            {variantData.unibind ? (
+              <div className="space-y-2">
+                <div className="p-2 bg-white/5 rounded border border-white/5 text-2xs flex justify-between items-center">
+                  <span className="text-slate-500">Transcription Factor:</span>
+                  <span className="font-bold text-white bg-violet-500/10 border border-violet-500/20 px-1.5 py-0.5 rounded font-mono text-3xs">{variantData.unibind.tf_name}</span>
+                </div>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar pr-1">
+                  {variantData.unibind.datasets.map(ds => (
+                    <div key={ds.dataset_id} className="p-2 bg-white/5 rounded border border-white/5 flex justify-between items-center text-2xs font-mono">
+                      <div>
+                        <span className="text-white block font-bold">{ds.dataset_id}</span>
+                        <span className="text-3xs text-slate-500">Species: {ds.species} | Cell: {ds.cell_line}</span>
+                      </div>
+                      <span className="text-violet-400 font-bold">Binding Sites: {ds.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 italic">No UniBind datasets available.</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'jaspar' && (
+          <div className="space-y-3">
+            <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+              JASPAR Motif Matrices
+            </span>
+            {variantData.jaspar ? (
+              <div className="space-y-2">
+                {variantData.jaspar.profiles.map(prof => (
+                  <div key={prof.matrix_id} className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-2">
+                    <div className="flex justify-between items-center text-2xs font-mono">
+                      <span className="font-bold text-white">{prof.name}</span>
+                      <span className="text-3xs text-violet-400 bg-violet-500/10 border border-violet-500/20 px-1.5 py-0.5 rounded">{prof.matrix_id}</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-3xs font-mono text-slate-400">
+                        <thead>
+                          <tr className="border-b border-white/5 text-slate-500">
+                            <th className="text-left py-1 pr-2">Base</th>
+                            {prof.pfm.A.map((_, i) => <th key={i} className="text-right py-1">Pos {i+1}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="text-left font-bold text-green-400">A</td>
+                            {prof.pfm.A.map((val, i) => <td key={i} className="text-right">{val}</td>)}
+                          </tr>
+                          <tr>
+                            <td className="text-left font-bold text-blue-400">C</td>
+                            {prof.pfm.C.map((val, i) => <td key={i} className="text-right">{val}</td>)}
+                          </tr>
+                          <tr>
+                            <td className="text-left font-bold text-yellow-400">G</td>
+                            {prof.pfm.G.map((val, i) => <td key={i} className="text-right">{val}</td>)}
+                          </tr>
+                          <tr>
+                            <td className="text-left font-bold text-red-400">T</td>
+                            {prof.pfm.T.map((val, i) => <td key={i} className="text-right">{val}</td>)}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 italic">No JASPAR matrix loaded.</div>
+            )}
+          </div>
         )}
       </div>
     </div>

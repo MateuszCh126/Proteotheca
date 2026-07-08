@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from typing import List
+from typing import List, Optional, Any
 from fastapi import APIRouter, Request, Query
 from pydantic import BaseModel
 
 from app.config import settings
-from app.services import pubmed_service, openalex_service, biorxiv_service
+from app.services import pubmed_service, openalex_service, biorxiv_service, arxiv_service, europepmc_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -39,16 +39,20 @@ class LiteratureResponse(BaseModel):
     pubmed: List[PubmedArticleResponse]
     biorxiv: List[BiorxivArticleResponse]
     openalex: List[OpenalexArticleResponse]
+    arxiv: Optional[List[Any]] = None
+    europepmc: Optional[List[Any]] = None
 
 @router.get("", response_model=LiteratureResponse)
 async def get_literature(query: str = Query(..., description="Query term for literature search"), request: Request = None):
     client = request.app.state.http_client
     mock_mode = settings.mock_mode
 
-    # Fetch PubMed and OpenAlex in parallel
+    # Fetch PubMed, OpenAlex, arXiv, and EuropePMC in parallel
     results = await asyncio.gather(
         pubmed_service.get_pubmed_articles(client, query, mock_mode),
         openalex_service.get_openalex_articles(client, query, mock_mode),
+        arxiv_service.get_arxiv_articles(client, query, mock_mode),
+        europepmc_service.get_epmc_articles(client, query, mock_mode),
         return_exceptions=True
     )
 
@@ -62,13 +66,31 @@ async def get_literature(query: str = Query(..., description="Query term for lit
         logger.error(f"OpenAlex query exception: {str(openalex_data)}")
         openalex_data = []
 
-    # Gather DOIs from both sources to identify bioRxiv papers
+    arxiv_data = results[2]
+    if isinstance(arxiv_data, Exception):
+        logger.error(f"arXiv query exception: {str(arxiv_data)}")
+        arxiv_data = []
+
+    europepmc_data = results[3]
+    if isinstance(europepmc_data, Exception):
+        logger.error(f"EuropePMC query exception: {str(europepmc_data)}")
+        europepmc_data = []
+
+    # Gather DOIs from all sources to identify bioRxiv papers
     doi_list = []
     for art in pubmed_data:
         doi = art.get("doi")
         if doi:
             doi_list.append(doi)
     for art in openalex_data:
+        doi = art.get("doi")
+        if doi:
+            doi_list.append(doi)
+    for art in arxiv_data:
+        doi = art.get("doi")
+        if doi:
+            doi_list.append(doi)
+    for art in europepmc_data:
         doi = art.get("doi")
         if doi:
             doi_list.append(doi)
@@ -84,5 +106,7 @@ async def get_literature(query: str = Query(..., description="Query term for lit
         "query": query,
         "pubmed": pubmed_data,
         "biorxiv": biorxiv_data,
-        "openalex": openalex_data
+        "openalex": openalex_data,
+        "arxiv": arxiv_data,
+        "europepmc": europepmc_data
     }

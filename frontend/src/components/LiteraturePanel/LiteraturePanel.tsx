@@ -11,7 +11,7 @@ interface LiteraturePanelProps {
 
 export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData, isLoading }) => {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'ALL' | 'PUBMED' | 'BIORXIV' | 'OPENALEX'>('ALL');
+  const [activeTab, setActiveTab] = useState<'ALL' | 'PUBMED' | 'BIORXIV' | 'OPENALEX' | 'ARXIV' | 'EUROPEPMC'>('ALL');
 
   if (isLoading) {
     return (
@@ -36,7 +36,9 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
     );
   }
 
-  const { pubmed, biorxiv, openalex } = literatureData;
+  const { pubmed, biorxiv, openalex, arxiv, europepmc } = literatureData;
+
+  const totalCount = pubmed.length + biorxiv.length + openalex.length + (arxiv?.length || 0) + (europepmc?.length || 0);
 
   const filteredArticles = (() => {
     switch (activeTab) {
@@ -46,11 +48,17 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
         return biorxiv.map(a => ({ ...a, source: 'biorxiv' as const, id: a.doi }));
       case 'OPENALEX':
         return openalex.map(a => ({ ...a, source: 'openalex' as const, id: a.id }));
+      case 'ARXIV':
+        return (arxiv || []).map(a => ({ ...a, source: 'arxiv' as const, id: a.id }));
+      case 'EUROPEPMC':
+        return (europepmc || []).map(a => ({ ...a, source: 'europepmc' as const, id: a.pmcid }));
       default:
         return [
           ...pubmed.map(a => ({ ...a, source: 'pubmed' as const, id: a.pmid })),
           ...biorxiv.map(a => ({ ...a, source: 'biorxiv' as const, id: a.doi })),
           ...openalex.map(a => ({ ...a, source: 'openalex' as const, id: a.id })),
+          ...(arxiv || []).map(a => ({ ...a, source: 'arxiv' as const, id: a.id })),
+          ...(europepmc || []).map(a => ({ ...a, source: 'europepmc' as const, id: a.pmcid })),
         ];
     }
   })();
@@ -64,7 +72,7 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
             {t('literature.title')}
           </h2>
           <span className="text-3xs font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
-            {t('literature.publications', { count: pubmed.length + biorxiv.length + openalex.length })}
+            {t('literature.publications', { count: totalCount })}
           </span>
         </div>
         <p className="text-3xs text-slate-400 font-mono mt-0.5">
@@ -75,10 +83,12 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
       {/* Tabs */}
       <div className="flex border-b border-white/5 pb-px overflow-x-auto custom-scrollbar">
         {([
-          { id: 'ALL', label: t('literature.all', { count: pubmed.length + biorxiv.length + openalex.length }) },
+          { id: 'ALL', label: t('literature.all', { count: totalCount }) },
           { id: 'PUBMED', label: `PubMed (${pubmed.length})` },
           { id: 'BIORXIV', label: `bioRxiv (${biorxiv.length})` },
           { id: 'OPENALEX', label: `OpenAlex (${openalex.length})` },
+          { id: 'ARXIV', label: `arXiv (${arxiv?.length || 0})` },
+          { id: 'EUROPEPMC', label: `EuropePMC (${europepmc?.length || 0})` },
         ] as const).map((tab) => {
           const isActive = activeTab === tab.id;
           return (

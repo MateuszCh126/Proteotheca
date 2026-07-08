@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
-from app.api import auth, genes, variants, diseases, literature, projects
+from app.api import auth, genes, variants, diseases, literature, projects, pymol, analysis
 from app.config import settings
 from app.database import create_all
 
@@ -40,6 +40,8 @@ app.include_router(variants.router, prefix="/api/variants", tags=["variants"])
 app.include_router(diseases.router, prefix="/api/diseases", tags=["diseases"])
 app.include_router(literature.router, prefix="/api/literature", tags=["literature"])
 app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
+app.include_router(pymol.router, prefix="/api/pymol", tags=["pymol"])
+app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
 
 @app.get("/")
 def read_root():

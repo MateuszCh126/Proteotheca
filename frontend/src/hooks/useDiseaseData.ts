@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DiseaseData } from '../types/disease';
-import { mockDiseases } from '../api/mockData';
+import { apiJson } from '../api/client';
 
 export function useDiseaseData(diseaseName: string | null) {
   const [data, setData] = useState<DiseaseData | null>(null);
@@ -17,25 +17,33 @@ export function useDiseaseData(diseaseName: string | null) {
 
     setIsLoading(true);
     setError(null);
+    let active = true;
 
-    const timer = setTimeout(() => {
-      // Perform case-insensitive match on disease name keys
-      const key = Object.keys(mockDiseases).find(
-        k => k.toLowerCase() === diseaseName.toLowerCase()
-      );
-      const found = key ? mockDiseases[key] : null;
-
-      if (found) {
-        setData(found);
-      } else {
-        setData(null);
-        setError(`Disease "${diseaseName}" not found in database.`);
+    async function fetchData() {
+      try {
+        const result = await apiJson<DiseaseData>(`/api/diseases/${encodeURIComponent(diseaseName as string)}`);
+        if (active) {
+          setData(result);
+        }
+      } catch (err: any) {
+        if (active) {
+          setData(null);
+          setError(err?.message || `Disease "${diseaseName}" not found in database.`);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
-    }, 500); // Simulated delay
+    }
 
-    return () => clearTimeout(timer);
+    fetchData();
+
+    return () => {
+      active = false;
+    };
   }, [diseaseName]);
 
   return { data, isLoading, error };
 }
+

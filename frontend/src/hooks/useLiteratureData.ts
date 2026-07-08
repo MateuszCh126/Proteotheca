@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LiteratureData } from '../types/literature';
-import { mockLiterature } from '../api/mockData';
+import { apiJson } from '../api/client';
 
 export function useLiteratureData(query: string | null) {
   const [data, setData] = useState<LiteratureData | null>(null);
@@ -17,38 +17,33 @@ export function useLiteratureData(query: string | null) {
 
     setIsLoading(true);
     setError(null);
+    let active = true;
 
-    const timer = setTimeout(() => {
-      // Find matches in literature mock data, or generate basic fallback entries
-      const upperQuery = query.toUpperCase();
-      const found = mockLiterature[upperQuery];
-
-      if (found) {
-        setData(found);
-      } else {
-        // Generate a dynamic fallback to keep it robust and not return empty results for arbitrary queries
-        setData({
-          query,
-          pubmed: [
-            {
-              pmid: "99887766",
-              title: `Clinical Relevance of Alterations in ${query}`,
-              authors: "BioMed Collab A, BioMed Collab B",
-              journal: "Journal of Medical Research",
-              pub_date: "2023-01-15",
-              abstract: `This study outlines the therapeutic and clinical impacts of alterations in ${query} across diverse patient populations. We characterize regulatory mechanisms and potential targets.`,
-              doi: `10.1234/jmr.2023.${query.toLowerCase()}`
-            }
-          ],
-          biorxiv: [],
-          openalex: []
-        });
+    async function fetchData() {
+      try {
+        const result = await apiJson<LiteratureData>(`/api/literature?query=${encodeURIComponent(query as string)}`);
+        if (active) {
+          setData(result);
+        }
+      } catch (err: any) {
+        if (active) {
+          setData(null);
+          setError(err?.message || `Literature query failed for "${query}".`);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
-    }, 450);
+    }
 
-    return () => clearTimeout(timer);
+    fetchData();
+
+    return () => {
+      active = false;
+    };
   }, [query]);
 
   return { data, isLoading, error };
 }
+

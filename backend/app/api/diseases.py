@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from typing import List
+from typing import List, Optional, Any
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
 from app.config import settings
-from app.services import opentargets_service, chembl_service, clinicaltrials_service, openfda_service
+from app.services import opentargets_service, chembl_service, clinicaltrials_service, openfda_service, ols_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -55,17 +55,19 @@ class DiseaseResponse(BaseModel):
     chembl: ChEMBLResponse
     clinical_trials: ClinicalTrialsResponse
     openfda: OpenFdaResponse
+    ols: Optional[Any] = None
 
 @router.get("/{disease_name}", response_model=DiseaseResponse)
 async def get_disease(disease_name: str, request: Request):
     client = request.app.state.http_client
     mock_mode = settings.mock_mode
 
-    # Fetch OpenTargets, ChEMBL, and ClinicalTrials in parallel
+    # Fetch OpenTargets, ChEMBL, ClinicalTrials, and OLS in parallel
     results = await asyncio.gather(
         opentargets_service.get_disease_associations(client, disease_name, mock_mode),
         chembl_service.get_active_compounds(client, disease_name, mock_mode),
         clinicaltrials_service.get_clinical_trials(client, disease_name, mock_mode),
+        ols_service.get_ontology_term_details(client, disease_name, mock_mode),
         return_exceptions=True
     )
 
@@ -83,6 +85,11 @@ async def get_disease(disease_name: str, request: Request):
     if isinstance(clinical_trials_data, Exception):
         logger.error(f"ClinicalTrials query exception: {str(clinical_trials_data)}")
         clinical_trials_data = {"trial_count": 0, "trials": []}
+
+    ols_data = results[3]
+    if isinstance(ols_data, Exception):
+        logger.error(f"OLS query exception: {str(ols_data)}")
+        ols_data = {}
 
     # Extract the name of the first active compound to pass to openFDA
     active_substance = ""
@@ -108,5 +115,6 @@ async def get_disease(disease_name: str, request: Request):
         "opentargets": opentargets_data,
         "chembl": chembl_data,
         "clinical_trials": clinical_trials_data,
-        "openfda": openfda_data
+        "openfda": openfda_data,
+        "ols": ols_data
     }

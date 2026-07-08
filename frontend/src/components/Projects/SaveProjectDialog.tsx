@@ -76,6 +76,7 @@ export default function SaveProjectDialog({
           className="biomed-input"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
+          placeholder="Project Name"
           required
           maxLength={255}
         />
@@ -101,13 +102,22 @@ export default function SaveProjectDialog({
 
         {error && <p className="rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
-        >
-          {saving ? t('common.saving') : t('projects.saveProject')}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex-1 rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
+          >
+            {saving ? t('common.saving') : t('projects.saveProject')}
+          </button>
+        </div>
       </form>
     </div>
   );

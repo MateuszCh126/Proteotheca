@@ -16,6 +16,7 @@ dist/
 build/
 .vite/
 coverage/
+.vercel/
 
 # Environment and secrets
 .env

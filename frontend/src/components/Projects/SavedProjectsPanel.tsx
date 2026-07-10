@@ -69,41 +69,41 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
   };
 
   return (
-    <aside className="fixed right-4 top-20 z-[90] w-[min(420px,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-hidden border border-cyan-400/20 p-4 shadow-2xl glass-panel">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-        <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
-          <FolderOpen className="h-4 w-4 shrink-0 text-cyan-300" />
+    <aside className="fixed right-4 top-20 z-[90] w-[min(420px,calc(100vw-2rem))] max-h-[calc(100vh-6rem)] overflow-hidden border border-line p-4 shadow-2xl glass-panel">
+      <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-ink">
+          <FolderOpen className="h-4 w-4 shrink-0 text-ink" />
           <span className="truncate">{t('projects.savedProjects')}</span>
         </div>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => void loadProjects()} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('projects.refresh')}>
+          <button type="button" onClick={() => void loadProjects()} className="rounded-lg p-1.5 hover:bg-wash" aria-label={t('projects.refresh')}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('projects.closePanel')}>
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-wash" aria-label={t('projects.closePanel')}>
             <X className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {loading && <p className="py-4 text-xs text-slate-400">{t('projects.loadingSaved')}</p>}
-      {error && <p className="mt-3 rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
+      {loading && <p className="py-4 text-xs text-ink-2">{t('projects.loadingSaved')}</p>}
+      {error && <p className="mt-3 rounded-lg border border-red-400/20 bg-wash px-3 py-2 text-xs text-red-200">{error}</p>}
 
-      <div className="custom-scrollbar max-h-[70vh] overflow-y-auto divide-y divide-white/10">
-        {!loading && projects.length === 0 && <p className="py-4 text-xs text-slate-400">{t('projects.empty')}</p>}
+      <div className="custom-scrollbar max-h-[70vh] overflow-y-auto divide-y divide-line">
+        {!loading && projects.length === 0 && <p className="py-4 text-xs text-ink-2">{t('projects.empty')}</p>}
 
         {projects.map((project) => (
           <article key={project.id} className="space-y-2 py-3">
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-bold text-white">{project.title}</h3>
-              <p className="truncate text-[0.65rem] text-slate-400">
+              <h3 className="truncate text-sm font-bold text-ink">{project.title}</h3>
+              <p className="truncate text-[0.65rem] text-ink-2">
                 {project.entity_type.toUpperCase()} / {project.query}
               </p>
             </div>
-            {project.description && <p className="line-clamp-2 text-xs text-slate-300">{project.description}</p>}
+            {project.description && <p className="line-clamp-2 text-xs text-ink-2">{project.description}</p>}
             {project.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {project.tags.map((tag) => (
-                  <span key={tag} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-0.5 text-[0.6rem] text-cyan-200">
+                  <span key={tag} className="rounded-full border border-line bg-wash px-2 py-0.5 text-[0.6rem] text-ink">
                     {tag}
                   </span>
                 ))}
@@ -114,7 +114,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
                 type="button"
                 onClick={() => void loadProject(project)}
                 disabled={actingProjectId === project.id}
-                className="rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
+                className="rounded-lg bg-ink px-2.5 py-1.5 text-xs font-bold text-paper hover:bg-ink disabled:opacity-60"
               >
                 {t('common.load')}
               </button>
@@ -122,7 +122,7 @@ export default function SavedProjectsPanel({ open, onClose, onLoad }: SavedProje
                 type="button"
                 onClick={() => void archiveProject(project)}
                 disabled={actingProjectId === project.id}
-                className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/10 disabled:opacity-60"
+                className="rounded-lg border border-line px-2.5 py-1.5 text-xs text-ink-2 hover:bg-wash disabled:opacity-60"
               >
                 <Archive className="mr-1 inline-block h-3.5 w-3.5" />
                 {t('common.archive')}

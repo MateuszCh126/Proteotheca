@@ -1,91 +1,94 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --bg-base: 240 15% 4%;
-    --bg-panel: 240 10% 8%;
-    
-    --accent-cyan: 180 80% 45%;
-    --accent-blue: 225 75% 55%;
-    --accent-violet: 280 70% 55%;
-    --accent-warning: 15 85% 55%;
-    --accent-success: 142 70% 45%;
-    
-    color-scheme: dark;
+    /* Proteotheca — clean clinical white, near-monochrome ink.
+       Fonts loaded in index.html. Accent = ink; pLDDT spectrum is the only colour. */
+    --paper:   220 24% 99%;   /* page background, cool near-white */
+    --surface: 0   0%  100%;  /* cards */
+    --wash:    220 20% 96%;   /* subtle fills / hover */
+    --line:    220 16% 91%;   /* hairlines */
+
+    --ink:     222 20% 10%;   /* primary text, cool near-black */
+    --ink-2:   220 9%  38%;   /* muted */
+    --ink-3:   220 8%  62%;   /* faint */
+
+    /* clinical significance — used sparingly */
+    --path:    349 66% 42%;
+    --path-bg: 349 74% 96%;
+    --benign:  152 52% 33%;
+
+    /* AlphaFold pLDDT confidence ramp — reserved for the structure */
+    --plddt-1: 217 58% 44%;
+    --plddt-2: 189 52% 51%;
+    --plddt-3: 45  76% 57%;
+    --plddt-4: 24  72% 55%;
+
+    color-scheme: light;
+
+    /* legacy accent aliases repointed to ink so un-swept components go monochrome */
+    --accent-cyan:    222 20% 10%;
+    --accent-blue:    222 20% 10%;
+    --accent-violet:  222 20% 10%;
+    --accent-warning: 349 66% 42%;
+    --accent-success: 152 52% 33%;
+    --bg-base:   220 24% 99%;
+    --bg-panel:  0 0% 100%;
   }
 
   body {
-    @apply bg-background text-[#fcfcfc] font-sans antialiased overflow-x-hidden min-h-screen;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(225, 75%, 55%, 0.08) 0, transparent 40%),
-      radial-gradient(at 100% 0%, hsla(180, 80%, 45%, 0.08) 0, transparent 40%),
-      radial-gradient(at 50% 100%, hsla(280, 70%, 55%, 0.05) 0, transparent 50%);
+    @apply bg-paper text-ink font-sans antialiased overflow-x-hidden min-h-screen;
   }
+
+  ::selection { background: hsl(var(--ink) / 0.10); }
+
+  h1, h2, h3, h4 { @apply font-serif; letter-spacing: -0.01em; }
 }
 
 @layer components {
-  /* Frosted Glassmorphic Panel Component */
+  /* Flat editorial card — replaces the frosted glass look */
   .glass-panel {
-    @apply bg-panel/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-glass-glow transition-all duration-300;
+    @apply bg-surface border border-line rounded-2xl transition-colors duration-200;
+    box-shadow: 0 1px 2px hsl(var(--ink) / 0.03), 0 6px 24px hsl(var(--ink) / 0.04);
   }
-  
   .glass-panel-hover {
-    @apply hover:bg-panel/60 hover:border-white/15 hover:shadow-accent-cyan/10;
+    @apply hover:border-ink-3/50;
   }
 
-  /* Glass Input Element */
-  .glass-input {
-    @apply bg-black/40 border border-white/10 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 
-           focus:outline-none focus:ring-1 focus:ring-accent-cyan/50 focus:border-accent-cyan/50
-           transition-all duration-200 backdrop-blur-md;
-  }
-
+  /* Light inputs */
+  .glass-input,
   .biomed-input {
     width: 100%;
-    border-radius: 0.5rem;
-    border: 1px solid hsl(199 89% 48% / 0.22);
-    background: hsl(222 47% 11% / 0.72);
-    padding: 0.65rem 0.75rem;
-    color: hsl(210 40% 98%);
-    font-size: 0.875rem;
+    border-radius: 0.625rem;
+    border: 1px solid hsl(var(--line));
+    background: hsl(var(--surface));
+    padding: 0.65rem 0.85rem;
+    color: hsl(var(--ink));
+    font-size: 0.9rem;
     outline: none;
-    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
   }
-
-  .biomed-input::placeholder {
-    color: hsl(215 20% 65% / 0.72);
-  }
-
+  .glass-input::placeholder,
+  .biomed-input::placeholder { color: hsl(var(--ink-3)); }
+  .glass-input:focus,
   .biomed-input:focus {
-    border-color: hsl(188 94% 50% / 0.7);
-    box-shadow: 0 0 0 3px hsl(188 94% 50% / 0.12);
-    background: hsl(222 47% 11% / 0.92);
+    border-color: hsl(var(--ink) / 0.6);
+    box-shadow: 0 0 0 3px hsl(var(--ink) / 0.07);
   }
 
-  /* Custom Scrollbar for Scientific Panels */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  .custom-scrollbar::-webkit-scrollbar { width: 7px; height: 7px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+    background: hsl(var(--ink) / 0.14); border-radius: 999px;
   }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(var(--ink) / 0.24); }
 
-  /* Non-significant overlay hashing pattern */
   .bg-stripes-overlay {
     background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 4px,
-      rgba(255, 255, 255, 0.05) 4px,
-      rgba(255, 255, 255, 0.05) 8px
+      45deg, transparent, transparent 4px,
+      hsl(var(--ink) / 0.04) 4px, hsl(var(--ink) / 0.04) 8px
     );
   }
 }

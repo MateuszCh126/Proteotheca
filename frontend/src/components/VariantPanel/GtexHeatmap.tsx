@@ -27,7 +27,7 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
 
     return {
       backgroundColor: `hsla(${hue}, ${saturation}, ${lightness}, ${opacity})`,
-      border: isSignificant ? '1px solid rgba(255,255,255,0.15)' : '1px dashed rgba(255,255,255,0.05)',
+      border: isSignificant ? '1px solid rgba(20,24,34,0.12)' : '1px dashed rgba(20,24,34,0.06)',
       isSignificant,
     };
   };
@@ -35,25 +35,25 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
   return (
     <div className="w-full flex flex-col space-y-4" data-testid="gtex-heatmap-container">
       {/* Title & Legend */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-white/5 rounded-lg border border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-wash rounded-lg border border-line">
         <div className="flex flex-wrap items-center gap-4 text-3xs uppercase tracking-wider font-bold">
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 bg-rose-500 rounded-sm" />
-            <span className="text-slate-300">{t('variant.upRegulated')}</span>
+            <span className="text-ink-2">{t('variant.upRegulated')}</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="w-3 h-3 bg-cyan-500 rounded-sm" />
-            <span className="text-slate-300">{t('variant.downRegulated')}</span>
+            <span className="w-3 h-3 bg-ink rounded-sm" />
+            <span className="text-ink-2">{t('variant.downRegulated')}</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="w-3 h-3 border border-dashed border-white/20 bg-stripes-overlay rounded-sm" />
-            <span className="text-slate-400">{t('variant.nonSignificant')}</span>
+            <span className="w-3 h-3 border border-dashed border-line bg-stripes-overlay rounded-sm" />
+            <span className="text-ink-2">{t('variant.nonSignificant')}</span>
           </div>
         </div>
       </div>
 
       {/* Responsive Grid Wrapper */}
-      <div className="overflow-x-auto w-full rounded-lg border border-white/10 bg-slate-950/40 p-4">
+      <div className="overflow-x-auto w-full rounded-lg border border-line bg-surface/40 p-4">
         <div 
           className="grid gap-1 min-w-[500px]"
           style={{ 
@@ -61,11 +61,11 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
           }}
         >
           {/* Header Row */}
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider py-1 select-none">{t('variant.tissue')}</div>
+          <div className="text-xs font-semibold text-ink-2 uppercase tracking-wider py-1 select-none">{t('variant.tissue')}</div>
           {uniqueGenes.map((gene) => (
             <div 
               key={gene} 
-              className="text-xs font-bold text-white text-center uppercase tracking-wider py-1 border-b border-white/10 font-outfit"
+              className="text-xs font-bold text-ink text-center uppercase tracking-wider py-1 border-b border-line font-sans"
             >
               {gene}
             </div>
@@ -77,7 +77,7 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
               <React.Fragment key={tissue}>
                 {/* Y-Axis Label */}
                 <div 
-                  className="text-3xs font-semibold text-slate-300 truncate py-1 pr-2 align-middle self-center font-outfit select-none" 
+                  className="text-3xs font-semibold text-ink-2 truncate py-1 pr-2 align-middle self-center font-sans select-none" 
                   title={tissue}
                 >
                   {tissue}
@@ -122,34 +122,34 @@ export const GtexHeatmap: React.FC<GtexHeatmapProps> = ({ eqtls }) => {
 
       {/* Tooltip Overlay / Status Bar */}
       <div 
-        className="h-16 p-3 rounded-lg border border-white/10 bg-slate-900/60 backdrop-blur-md flex items-center justify-between text-xs transition-opacity duration-200"
+        className="h-16 p-3 rounded-lg border border-line bg-surface backdrop-blur-md flex items-center justify-between text-xs transition-opacity duration-200"
         style={{ opacity: hoveredCell ? 1 : 0.5 }}
       >
         {hoveredCell ? (
           <>
             <div>
-              <span className="font-bold text-white block font-outfit">{hoveredCell.tissue}</span>
-              <span className="text-3xs text-slate-400 uppercase tracking-wider block mt-0.5">
-                {t('variant.targetGene')} <strong className="text-slate-200">{hoveredCell.gene_symbol}</strong>
+              <span className="font-bold text-ink block font-sans">{hoveredCell.tissue}</span>
+              <span className="text-3xs text-ink-2 uppercase tracking-wider block mt-0.5">
+                {t('variant.targetGene')} <strong className="text-ink">{hoveredCell.gene_symbol}</strong>
               </span>
             </div>
             <div className="flex gap-4">
               <div className="text-right">
-                <span className="text-3xs text-slate-400 block mb-0.5">{t('variant.normalizedEffectSize')}</span>
-                <span className={`font-mono font-bold ${hoveredCell.nes >= 0 ? 'text-rose-400' : 'text-cyan-400'}`}>
+                <span className="text-3xs text-ink-2 block mb-0.5">{t('variant.normalizedEffectSize')}</span>
+                <span className={`font-mono font-bold ${hoveredCell.nes >= 0 ? 'text-path' : 'text-ink'}`}>
                   {hoveredCell.nes > 0 ? '+' : ''}{hoveredCell.nes.toFixed(4)}
                 </span>
               </div>
-              <div className="text-right border-l border-white/10 pl-4">
-                <span className="text-3xs text-slate-400 block mb-0.5">{t('variant.significancePValue')}</span>
-                <span className={`font-mono font-bold ${hoveredCell.p_value < 0.05 ? 'text-emerald-400' : 'text-amber-400'}`}>
+              <div className="text-right border-l border-line pl-4">
+                <span className="text-3xs text-ink-2 block mb-0.5">{t('variant.significancePValue')}</span>
+                <span className={`font-mono font-bold ${hoveredCell.p_value < 0.05 ? 'text-benign' : 'text-plddt-3'}`}>
                   {hoveredCell.p_value.toExponential(3)}
                 </span>
               </div>
             </div>
           </>
         ) : (
-          <span className="text-slate-400 italic font-outfit">{t('variant.hoverHeatmap')}</span>
+          <span className="text-ink-2 italic font-sans">{t('variant.hoverHeatmap')}</span>
         )}
       </div>
     </div>

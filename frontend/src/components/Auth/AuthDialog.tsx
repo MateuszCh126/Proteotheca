@@ -44,22 +44,22 @@ export default function AuthDialog({ mode, onClose }: AuthDialogProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/75 px-4 backdrop-blur-sm">
-      <form onSubmit={submit} className="glass-panel w-full max-w-md space-y-4 border border-cyan-400/20 p-5">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/75 px-4 backdrop-blur-sm">
+      <form onSubmit={submit} className="glass-panel w-full max-w-md space-y-4 border border-line p-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
+          <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-ink">
             {activeMode === 'register' ? (
-              <UserPlus className="h-4 w-4 shrink-0 text-cyan-300" />
+              <UserPlus className="h-4 w-4 shrink-0 text-ink" />
             ) : (
-              <LogIn className="h-4 w-4 shrink-0 text-cyan-300" />
+              <LogIn className="h-4 w-4 shrink-0 text-ink" />
             )}
             <span className="truncate">{activeMode === 'register' ? t('auth.createResearchAccount') : t('auth.signIn')}</span>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-white/10" aria-label={t('auth.closeDialog')}>
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 hover:bg-wash" aria-label={t('auth.closeDialog')}>
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="text-xs font-semibold text-slate-400">Access BioMed Portal</div>
+        <div className="text-xs font-semibold text-ink-2">Access BioMed Portal</div>
 
         {activeMode === 'register' && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -98,19 +98,19 @@ export default function AuthDialog({ mode, onClose }: AuthDialogProps) {
           minLength={activeMode === 'register' ? 8 : 1}
         />
 
-        {error && <p className="rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
+        {error && <p className="rounded-lg border border-red-400/20 bg-wash px-3 py-2 text-xs text-red-200">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
+          className="w-full rounded-lg bg-ink px-3 py-2 text-sm font-bold text-paper transition hover:bg-ink disabled:opacity-60"
         >
           {submitting ? t('common.working') : activeMode === 'register' ? t('auth.createAccount') : t('auth.signIn')}
         </button>
 
         <button
           type="button"
-          className="text-xs text-slate-300 hover:text-cyan-300"
+          className="text-xs text-ink-2 hover:text-ink"
           onClick={() => {
             setError(null);
             setActiveMode(activeMode === 'register' ? 'login' : 'register');

@@ -25,11 +25,11 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
   if (!literatureData) {
     return (
       <div className="glass-panel p-6 flex flex-col items-center justify-center min-h-[300px] text-center" data-testid="literature-panel">
-        <div className="p-3 bg-white/5 rounded-full text-slate-400 mb-3">
+        <div className="p-3 bg-wash rounded-full text-ink-2 mb-3">
           <BookOpen className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-white mb-1 font-outfit">{t('literature.noEvidence')}</h3>
-        <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+        <h3 className="text-sm font-bold text-ink mb-1 font-sans">{t('literature.noEvidence')}</h3>
+        <p className="text-xs text-ink-2 max-w-xs leading-relaxed">
           {t('literature.noEvidenceDescription')}
         </p>
       </div>
@@ -68,20 +68,20 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
       {/* Header */}
       <div>
         <div className="flex items-center space-x-2">
-          <h2 className="text-lg font-extrabold text-white tracking-tight font-outfit">
+          <h2 className="text-lg font-extrabold text-ink tracking-tight font-sans">
             {t('literature.title')}
           </h2>
-          <span className="text-3xs font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
+          <span className="text-3xs font-mono bg-wash text-plddt-1 px-1.5 py-0.5 rounded border border-line">
             {t('literature.publications', { count: totalCount })}
           </span>
         </div>
-        <p className="text-3xs text-slate-400 font-mono mt-0.5">
+        <p className="text-3xs text-ink-2 font-mono mt-0.5">
           {t('literature.synthesisForQuery', { query: literatureData.query })}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/5 pb-px overflow-x-auto custom-scrollbar">
+      <div className="flex border-b border-line pb-px overflow-x-auto custom-scrollbar">
         {([
           { id: 'ALL', label: t('literature.all', { count: totalCount }) },
           { id: 'PUBMED', label: `PubMed (${pubmed.length})` },
@@ -97,8 +97,8 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
               onClick={() => setActiveTab(tab.id)}
               className={`px-3 py-1.5 text-xs font-semibold tracking-tight border-b-2 transition-all mr-4 relative -bottom-px shrink-0 ${
                 isActive
-                  ? 'border-accent-blue text-white font-bold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-accent-blue text-ink font-bold'
+                  : 'border-transparent text-ink-2 hover:text-ink'
               }`}
             >
               {tab.label}
@@ -110,7 +110,7 @@ export const LiteraturePanel: React.FC<LiteraturePanelProps> = ({ literatureData
       {/* List */}
       <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-1">
         {filteredArticles.length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-500 italic border border-dashed border-white/5 rounded-xl">
+          <div className="p-8 text-center text-xs text-ink-3 italic border border-dashed border-line rounded-xl">
             {t('literature.noArticles')}
           </div>
         ) : (

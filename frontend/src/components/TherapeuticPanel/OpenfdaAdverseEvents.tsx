@@ -44,8 +44,8 @@ export const FdaEventsChart: React.FC<{ events: AdverseEventTerm[] }> = ({ event
               if (active && payload && payload.length) {
                 const item = payload[0].payload as AdverseEventTerm;
                 return (
-                  <div className="glass-panel p-2 rounded-lg border border-white/10 bg-slate-950/90 backdrop-blur-md text-3xs">
-                    <p className="font-bold text-white uppercase font-outfit">{item.term}</p>
+                  <div className="glass-panel p-2 rounded-lg border border-line bg-surface/90 backdrop-blur-md text-3xs">
+                    <p className="font-bold text-ink uppercase font-sans">{item.term}</p>
                     <p className="text-orange-400 mt-1">
                       {t('common.reports')}: <span className="font-mono">{item.count.toLocaleString()}</span>
                     </p>
@@ -78,7 +78,7 @@ export const DemographicsDonutChart: React.FC<DemographicsChartProps> = ({ data,
 
   return (
     <div className="flex flex-col items-center w-full h-48" data-testid={testId}>
-      <h4 className="text-3xs font-semibold text-slate-400 uppercase tracking-wider mb-1 font-outfit">{title}</h4>
+      <h4 className="text-3xs font-semibold text-ink-2 uppercase tracking-wider mb-1 font-sans">{title}</h4>
       <ResponsiveContainer width="100%" height="90%">
         <PieChart>
           <Pie
@@ -99,9 +99,9 @@ export const DemographicsDonutChart: React.FC<DemographicsChartProps> = ({ data,
               if (active && payload && payload.length) {
                 const item = payload[0];
                 return (
-                  <div className="glass-panel p-2 rounded-lg border border-white/10 bg-slate-950/90 backdrop-blur-md text-3xs">
-                    <span className="font-semibold text-white font-outfit">{item.name}</span>
-                    <span className="text-slate-300 font-mono block mt-0.5">
+                  <div className="glass-panel p-2 rounded-lg border border-line bg-surface/90 backdrop-blur-md text-3xs">
+                    <span className="font-semibold text-ink font-sans">{item.name}</span>
+                    <span className="text-ink-2 font-mono block mt-0.5">
                       {t('common.reports')}: {Number(item.value).toLocaleString()}
                     </span>
                   </div>
@@ -132,17 +132,17 @@ export const OpenfdaAdverseEvents: React.FC<OpenfdaAdverseEventsProps> = ({ data
     <div className="space-y-4">
       <div>
         <div className="flex justify-between items-center mb-2">
-          <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold block">
+          <span className="text-3xs uppercase tracking-wider text-ink-2 font-bold block">
             {t('therapeutic.fdaSymptomFrequency', { substance: data.active_substance })}
           </span>
-          <span className="text-3xs text-slate-500 font-mono">
+          <span className="text-3xs text-ink-3 font-mono">
             {t('common.totalReports', { count: data.total_reports.toLocaleString() })}
           </span>
         </div>
         <FdaEventsChart events={data.events} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-3">
+      <div className="grid grid-cols-2 gap-4 border-t border-line pt-3">
         <DemographicsDonutChart 
           data={data.sex_breakdown} 
           title={t('therapeutic.sexBreakdown')} 

@@ -219,102 +219,73 @@ export const MolViewer: React.FC<MolViewerProps> = ({
     }
   };
 
+  const segBtn = (active: boolean) =>
+    `rounded-full px-3 py-1 font-mono text-[11px] transition-colors ${
+      active ? 'bg-ink text-paper' : 'text-ink-2 hover:text-ink'
+    }`;
+
   return (
+    <div className="w-full" data-testid="mol-viewer-container">
+      {/* Stage */}
+      <div className="relative h-[500px] w-full overflow-hidden bg-[radial-gradient(120%_100%_at_50%_0%,#ffffff_0%,#f2f4f7_100%)]">
+        {/* WebGL Canvas Parent Mount Point */}
+        <div ref={parentRef} className="absolute inset-0 z-0 h-full w-full" />
 
-    <div
-      className="group relative flex h-[400px] w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 shadow-inner backdrop-blur-md"
-      data-testid="mol-viewer-container"
-    >
-      {/* WebGL Canvas Parent Mount Point */}
-      <div ref={parentRef} className="absolute inset-0 z-0 w-full h-full" />
+        {/* Loading Overlay */}
+        {isViewerLoading && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface/70 backdrop-blur-sm">
+            <div className="mb-4 h-7 w-7 animate-spin rounded-full border-2 border-ink/20 border-t-ink" />
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+              {t('mol.fetching') || 'Loading structure…'}
+            </span>
+          </div>
+        )}
 
-      {/* Loading Overlay */}
-      {isViewerLoading && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4" />
-          <span className="text-3xs font-mono text-cyan-300 uppercase tracking-widest">
-            {t('mol.fetching') || 'Loading structure...'}
-          </span>
-        </div>
-      )}
-
-      {/* Custom UI Header Controls */}
-      <div className="pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-3 text-3xs font-bold uppercase tracking-[0.18em] text-slate-400">
-        <div className="flex gap-2">
-          <span className="pointer-events-auto rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-cyan-200">
-            PDB {pdbId}
-          </span>
-          <button
-            onClick={handleGenerateDetailedRender}
-            disabled={isRendering}
-            data-testid="pymol-render-btn"
-            className="pointer-events-auto rounded-full border border-cyan-400/35 bg-cyan-500/20 hover:bg-cyan-500/30 px-3 py-1 text-cyan-200 font-bold uppercase cursor-pointer disabled:bg-slate-800 disabled:border-white/5 transition-all"
-          >
-            {isRendering ? 'Rendering...' : 'Generate Detailed Render'}
-          </button>
-        </div>
-        <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-200">
-          {t('mol.previewReady')}
+        {/* Corner labels */}
+        <span className="absolute left-4 top-4 z-10 rounded-full border border-line bg-surface/90 px-3 py-1 font-mono text-[11px] text-ink-2 shadow-sm">
+          PDB {pdbId}
         </span>
+        <span className="absolute right-4 top-4 z-10 flex items-center gap-1.5 rounded-full border border-line bg-surface/90 px-3 py-1 font-mono text-[11px] text-ink-2 shadow-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-benign" />
+          {t('mol.interactive3d')}
+        </span>
+
+        {/* pLDDT legend */}
+        {colorMode === 'plddt' && (
+          <div className="absolute bottom-4 left-4 z-10 select-none">
+            <div className="h-1.5 w-[130px] rounded-full bg-[linear-gradient(90deg,hsl(var(--plddt-1)),hsl(var(--plddt-2))_42%,hsl(var(--plddt-3))_74%,hsl(var(--plddt-4)))]" />
+            <div className="mt-1 flex w-[130px] justify-between font-mono text-[9px] text-ink-3">
+              <span>low pLDDT</span><span>high</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Control Overlay Bar */}
-      <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/70 p-2 shadow-lg backdrop-blur-md">
-        <div className="flex space-x-1">
-          <button
-            onClick={handleZoomIn}
-            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
-            title={t('mol.zoomIn')}
-          >
-            <ZoomIn className="h-3.5 w-3.5" />
+      {/* Control bar (below the stage, on the card) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3">
+        <div className="flex items-center gap-1">
+          <button onClick={handleZoomIn} title={t('mol.zoomIn')} className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-wash hover:text-ink">
+            <ZoomIn className="h-4 w-4" />
           </button>
-          <button
-            onClick={handleZoomOut}
-            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
-            title={t('mol.zoomOut')}
-          >
-            <ZoomOut className="h-3.5 w-3.5" />
+          <button onClick={handleZoomOut} title={t('mol.zoomOut')} className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-wash hover:text-ink">
+            <ZoomOut className="h-4 w-4" />
           </button>
-          <button
-            onClick={handleRecenter}
-            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10"
-            title={t('mol.recenter')}
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
+          <button onClick={handleRecenter} title={t('mol.recenter')} className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-wash hover:text-ink">
+            <Maximize2 className="h-4 w-4" />
           </button>
         </div>
 
-        <span className="h-5 w-px self-center bg-white/10" />
-
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center gap-1 rounded-full border border-line bg-wash p-1">
           {(['cartoon', 'surface', 'spheres'] as const).map((rep) => (
-            <button
-              key={rep}
-              onClick={() => handleRepresentationChange(rep)}
-              className={`rounded border px-2 py-0.5 text-3xs font-extrabold uppercase transition-all ${
-                representation === rep
-                  ? 'border-cyan-500/30 bg-cyan-500/20 text-cyan-300'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
+            <button key={rep} onClick={() => handleRepresentationChange(rep)} className={segBtn(representation === rep)}>
               {t(`mol.${rep}` as const)}
             </button>
           ))}
         </div>
 
-        <span className="h-5 w-px self-center bg-white/10" />
-
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center gap-1 rounded-full border border-line bg-wash p-1">
           {(['plddt', 'chain', 'hydrophobicity'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => handleColorModeChange(mode)}
-              className={`rounded border px-2 py-0.5 text-3xs font-extrabold uppercase transition-all ${
-                colorMode === mode
-                  ? 'border-cyan-500/30 bg-cyan-500/20 text-cyan-300'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
+            <button key={mode} onClick={() => handleColorModeChange(mode)} className={segBtn(colorMode === mode)}>
               {t(`mol.${mode}` as const)}
             </button>
           ))}

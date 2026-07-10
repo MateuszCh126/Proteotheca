@@ -49,13 +49,13 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
   };
 
   const getStatusBadge = (status: string) => {
-    let color = 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    let color = 'bg-ink-3/10 text-ink-2 border-slate-500/20';
     if (status === 'COMPLETED') {
-      color = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
+      color = 'bg-emerald-500/15 text-benign border-line';
     } else if (status === 'RECRUITING') {
-      color = 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20';
+      color = 'bg-ink/15 text-ink border-line';
     } else if (status === 'ACTIVE_NOT_RECRUITING') {
-      color = 'bg-indigo-500/15 text-indigo-400 border-indigo-500/20';
+      color = 'bg-indigo-500/15 text-ink border-indigo-500/20';
     }
     return (
       <span
@@ -76,7 +76,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-3xs uppercase tracking-wider text-slate-400 font-bold">
+        <span className="text-3xs uppercase tracking-wider text-ink-2 font-bold">
           {t('therapeutic.registry', { count: filteredAndSortedTrials.length })}
         </span>
 
@@ -88,7 +88,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
               setStatusFilter(e.target.value as any);
               setCurrentPage(1);
             }}
-            className="bg-slate-900/60 border border-white/10 text-slate-300 text-3xs rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+            className="bg-surface border border-line text-ink-2 text-3xs rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ink/30"
           >
             <option value="ALL">{t('therapeutic.allStatus')}</option>
             <option value="COMPLETED">{t('therapeutic.completed')}</option>
@@ -97,7 +97,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
 
           <button
             onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
-            className="p-1 hover:bg-white/5 border border-white/10 rounded text-slate-300 transition-colors"
+            className="p-1 hover:bg-wash border border-line rounded text-ink-2 transition-colors"
             title={t('therapeutic.sortByTitle')}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
@@ -107,7 +107,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
 
       <div className="space-y-2">
         {paginatedTrials.length === 0 ? (
-          <div className="p-4 text-center text-xs text-slate-500 italic border border-dashed border-white/5 rounded-xl">
+          <div className="p-4 text-center text-xs text-ink-3 italic border border-dashed border-line rounded-xl">
             {t('therapeutic.noTrials')}
           </div>
         ) : (
@@ -115,15 +115,15 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
             <div
               key={trial.nct_id}
               data-testid={`clinical-trial-row-${trial.nct_id.toLowerCase()}`}
-              className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-2 hover:bg-white/8 transition-colors"
+              className="p-3 bg-wash border border-line rounded-xl space-y-2 hover:bg-wash transition-colors"
             >
               <div className="flex justify-between items-start">
-                <span className="text-3xs font-mono font-bold text-cyan-400 uppercase">
+                <span className="text-3xs font-mono font-bold text-ink uppercase">
                   {trial.nct_id}
                 </span>
                 {getStatusBadge(trial.status)}
               </div>
-              <p className="text-xs text-slate-200 leading-normal font-outfit line-clamp-2">
+              <p className="text-xs text-ink leading-normal font-sans line-clamp-2">
                 {trial.title}
               </p>
             </div>
@@ -133,7 +133,7 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1 text-2xs text-slate-400 font-mono">
+        <div className="flex items-center justify-between pt-1 text-2xs text-ink-2 font-mono">
           <span>
             {t('common.pageOf', { current: currentPage, total: totalPages })}
           </span>
@@ -141,14 +141,14 @@ export const ClinicalTrialsList: React.FC<ClinicalTrialsListProps> = ({ trials }
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="p-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 transition-colors"
+              className="p-1 rounded bg-wash hover:bg-wash disabled:opacity-40 disabled:hover:bg-wash transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="p-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 transition-colors"
+              className="p-1 rounded bg-wash hover:bg-wash disabled:opacity-40 disabled:hover:bg-wash transition-colors"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>

@@ -11,10 +11,10 @@ import UserMenu from './components/Auth/UserMenu';
 import LanguageSwitcher from './components/LanguageSwitcher/LanguageSwitcher';
 import SaveProjectDialog from './components/Projects/SaveProjectDialog';
 import SavedProjectsPanel from './components/Projects/SavedProjectsPanel';
-import { mockGenes, mockVariants, mockDiseases, mockLiterature } from './api/mockData';
 import { apiJson } from './api/client';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
-import { Activity, Database, FolderOpen, LogIn, Save, UserPlus } from 'lucide-react';
+import { Search, ArrowUpRight } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useI18n } from './context/I18nContext';
 import type { EntityType } from './api/projects';
@@ -26,9 +26,11 @@ const isMolViewerRepresentation = (value: unknown): value is MolViewerRepresenta
 const isMolViewerColorMode = (value: unknown): value is MolViewerColorMode =>
   value === 'plddt' || value === 'chain' || value === 'hydrophobicity';
 
+const pdbForGene = (symbol?: string) => (symbol === 'EGFR' ? '1M17' : symbol === 'TP53' ? '1AIE' : '1UWH');
+
 export const App: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, language, setLanguage } = useI18n();
   const [loadedGene, setLoadedGene] = useState<any>(null);
   const [loadedVariant, setLoadedVariant] = useState<any>(null);
   const [loadedDisease, setLoadedDisease] = useState<any>(null);
@@ -43,10 +45,12 @@ export const App: React.FC = () => {
   const [layoutTab, setLayoutTab] = useState<'visuals' | 'data'>('visuals');
   const [molRepresentation, setMolRepresentation] = useState<MolViewerRepresentation>('cartoon');
   const [molColorMode, setMolColorMode] = useState<MolViewerColorMode>('plddt');
+  const [queryInput, setQueryInput] = useState('');
 
   // Pre-load default state for demonstration and testing (BRAF V600E / Melanoma discovery)
   useEffect(() => {
     const fetchDefaultState = async () => {
+      setIsLoading(true);
       try {
         const [gene, variant, disease, literature] = await Promise.all([
           apiJson<any>('/api/genes/BRAF'),
@@ -59,11 +63,10 @@ export const App: React.FC = () => {
         setLoadedDisease(disease);
         setLoadedLiterature(literature);
       } catch (err) {
-        console.warn('Failed to fetch initial default state from backend API. Falling back to local mock data.', err);
-        setLoadedGene(mockGenes.BRAF);
-        setLoadedVariant(mockVariants.rs113488022);
-        setLoadedDisease(mockDiseases.Melanoma);
-        setLoadedLiterature(mockLiterature.BRAF);
+        console.error('Could not reach the data service for the default readout.', err);
+        setError('Could not reach the data service. Start the backend, then reload.');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchDefaultState();
@@ -230,153 +233,193 @@ export const App: React.FC = () => {
     }
   };
 
+  const runSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = queryInput.trim();
+    if (!q) return;
+    const type: 'gene' | 'variant' | 'disease' =
+      /^rs\d+/i.test(q) ? 'variant'
+      : /cancer|carcinoma|melanoma|leukemia|lymphoma|tumou?r|disease|syndrome|itis$/i.test(q) ? 'disease'
+      : 'gene';
+    handleSearch(q, type);
+  };
+
+  const geneSym: string | undefined = loadedGene?.symbol;
+  const variantId: string | undefined = loadedVariant?.variant_id;
+  const pathogenicity: string | undefined = loadedVariant?.clinvar?.pathogenicity;
+  const isPath = pathogenicity ? /pathogenic/i.test(pathogenicity) : false;
+  const diseaseName: string | undefined = loadedDisease?.disease_name;
+  const pdbId = pdbForGene(geneSym);
+  const trialCount: number | undefined = loadedDisease?.clinical_trials?.trial_count;
+
+  const traceNodes = [
+    { k: 'Gene', v: geneSym, m: loadedGene?.ensembl?.gene_id },
+    { k: 'Variant', v: variantId, m: pathogenicity, tone: isPath ? 'path' : undefined },
+    { k: 'Disease', v: diseaseName, m: trialCount != null ? `${trialCount} trials` : undefined },
+    { k: 'Structure', v: `PDB ${pdbId}`, m: 'kinase domain' },
+  ].filter((n) => n.v);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-cyan-500/30 relative">
-      {/* Background radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 -z-10 pointer-events-none" />
-
-      {/* Header bar */}
-      <header className="h-16 border-b border-white/5 backdrop-blur-md bg-slate-950/40 sticky top-0 z-50 flex items-center px-6 justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-1.5 bg-gradient-to-tr from-cyan-400 to-indigo-500 rounded-lg text-slate-950">
-            <Activity className="w-5 h-5" />
-          </div>
-          <h1 className="text-lg font-bold font-outfit tracking-tight flex items-center space-x-2">
-            <span className="bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">BioMed Explorer</span>
-            <span className="text-3xs bg-cyan-500/10 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-500/20 font-mono">v1.0</span>
-          </h1>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-3">
-          <LanguageSwitcher />
-          <span className="hidden items-center space-x-1.5 rounded-full border border-white/5 bg-white/5 px-2.5 py-1 font-mono text-2xs text-slate-400 sm:flex">
-            <Database className="w-3 h-3 text-cyan-400" />
-            <span>{t('nav.aggregateMode')}</span>
-          </span>
-          {user ? (
-            <UserMenu />
-          ) : (
-            <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-paper text-ink">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1080px] items-center justify-between px-6">
+          <a href="#top" className="group flex items-baseline gap-3">
+            <span className="font-serif text-[20px] font-semibold tracking-[-0.02em]">Proteotheca</span>
+            <span className="hidden font-mono text-[11px] text-ink-3 sm:inline">32 sources · one readout</span>
+          </a>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 font-mono text-[12px]">
+              <button type="button" onClick={() => setLanguage('en')} className={language === 'en' ? 'text-ink' : 'text-ink-3 hover:text-ink'}>EN</button>
+              <span className="text-ink-3">/</span>
+              <button type="button" onClick={() => setLanguage('pl')} className={language === 'pl' ? 'text-ink' : 'text-ink-3 hover:text-ink'}>PL</button>
+            </div>
+            {user ? (
+              <UserMenu />
+            ) : (
               <button
                 type="button"
                 onClick={() => setAuthDialogMode('login')}
-                aria-label={t('nav.signIn')}
-                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10"
+                className="rounded-full bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition-colors hover:bg-ink/85"
               >
-                <LogIn className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t('nav.signIn')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthDialogMode('register')}
-                aria-label={t('nav.register')}
-                className="flex items-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300"
-              >
-                <UserPlus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t('nav.register')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
-
-      {/* Top search controls bar */}
-      <section className="max-w-[1920px] mx-auto px-4 md:px-6 pt-5">
-        <div className="glass-panel p-4 flex flex-col md:flex-row items-center gap-4 justify-between">
-          <div className="w-full md:max-w-xl">
-            <SearchBar onSearch={handleSearch} isLoading={isLoading} error={error} />
-          </div>
-          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
-            <button
-              type="button"
-              onClick={() => setShowSavedProjects(true)}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-white/10 sm:flex-none"
-            >
-              <FolderOpen className="h-3.5 w-3.5" />
-              {t('projects.savedProjects')}
-            </button>
-            {!showSaveProject && (
-              <button
-                type="button"
-                onClick={() => setShowSaveProject(true)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-cyan-400 px-2.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 sm:flex-none"
-              >
-                <Save className="h-3.5 w-3.5" />
-                {t('projects.saveProject')}
+                {t('nav.signIn')}
               </button>
             )}
           </div>
-          <div className="text-right hidden md:block">
-            <span className="text-3xs uppercase tracking-widest text-slate-500 font-bold block">{t('nav.activeSessionTarget')}</span>
-            <span className="text-xs font-bold text-white font-outfit mt-0.5 block">
-              {loadedGene ? `${loadedGene.symbol}` : t('nav.none')} {loadedVariant ? `| ${loadedVariant.variant_id}` : ''} {loadedDisease ? `| ${loadedDisease.disease_name}` : ''}
-            </span>
-          </div>
         </div>
-      </section>
+      </header>
 
-      {/* Main Grid Content */}
-      <main className="p-4 md:p-6 max-w-[1920px] mx-auto">
-        {/* Layout Tabs for Standard Desktop / Tablet Viewports */}
-        <div className="flex xl:hidden mb-4 bg-white/5 p-1 rounded-xl border border-white/5 max-w-sm">
+      <main id="top" className="mx-auto max-w-[1080px] px-6 pb-32">
+        {/* Search */}
+        <form onSubmit={runSearch} className="mx-auto mt-14 flex max-w-[640px] items-center gap-2">
+          <div className="flex flex-1 items-center gap-3 rounded-full border border-line bg-surface px-5 py-3 transition-colors focus-within:border-ink/40">
+            <Search className="h-4 w-4 text-ink-3" />
+            <input
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              placeholder="Search a gene, a variant (rsID), or a disease"
+              spellCheck={false}
+              className="w-full bg-transparent font-mono text-[14px] text-ink outline-none placeholder:text-ink-3"
+            />
+          </div>
           <button
-            onClick={() => setLayoutTab('visuals')}
-            data-testid="tab-trigger-layout-visuals"
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              layoutTab === 'visuals' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
-            }`}
+            type="submit"
+            disabled={isLoading}
+            className="rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-colors hover:bg-ink/85 disabled:opacity-40"
           >
-            {t('layout.visuals')}
+            {isLoading ? '…' : 'Read'}
           </button>
-          <button
-            onClick={() => setLayoutTab('data')}
-            data-testid="tab-trigger-layout-data"
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              layoutTab === 'data' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {t('layout.data')}
-          </button>
+        </form>
+        {error && <p className="mt-3 text-center font-mono text-[12px] text-path">{error}</p>}
+
+        {/* Case abstract */}
+        <section className="mx-auto mt-16 max-w-[820px] animate-[fade-in_0.6s_ease]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Case readout</p>
+          <h1 className="mt-4 font-serif text-[clamp(2.4rem,6vw,4rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+            {geneSym || '—'}
+            {diseaseName && <span className="text-ink-3"> in {diseaseName}</span>}
+          </h1>
+          <p className="mt-5 max-w-[54ch] text-[17px] leading-relaxed text-ink-2">
+            {loadedGene?.uniprot?.name
+              ? `${loadedGene.uniprot.name}. `
+              : ''}
+            A single query, read across genomics, structure, clinical significance and the literature — from{' '}
+            {traceNodes.length} of 32 connected sources.
+          </p>
+
+          {/* trace */}
+          <div className="mt-9 flex flex-wrap items-stretch gap-x-10 gap-y-6 border-t border-line pt-7">
+            {traceNodes.map((n) => (
+              <div key={n.k} className="min-w-[120px]">
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">{n.k}</p>
+                <p className="mt-1.5 font-serif text-[19px] leading-tight">{n.v}</p>
+                {n.m && (
+                  <p className={`mt-1 font-mono text-[11px] ${n.tone === 'path' ? 'text-path' : 'text-ink-2'}`}>
+                    {n.tone === 'path' && <span className="mr-1">●</span>}
+                    {n.m}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Structure hero */}
+        <section className="mt-16">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">The structure</p>
+              <h2 className="mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">
+                {geneSym} kinase domain
+              </h2>
+            </div>
+            <p className="hidden max-w-[30ch] text-right text-[13px] leading-snug text-ink-2 sm:block">
+              Rendered in-browser and coloured by AlphaFold model confidence (pLDDT).
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-[20px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,24,34,0.03),0_16px_40px_rgba(20,24,34,0.06)]">
+            <MolViewer
+              pdbId={pdbId}
+              representation={molRepresentation}
+              colorMode={molColorMode}
+              onRepresentationChange={setMolRepresentation}
+              onColorModeChange={setMolColorMode}
+            />
+          </div>
+        </section>
+
+        {/* Evidence — the full reading across every source */}
+        <div className="mt-20 space-y-16">
+          {loadedGene && (
+            <section>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Genomics</p>
+              <h2 className="mb-6 mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">The gene</h2>
+              <ErrorBoundary label="gene"><GenePanel geneData={loadedGene} isLoading={isLoading} /></ErrorBoundary>
+            </section>
+          )}
+
+          {loadedVariant && (
+            <section>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Variant impact</p>
+              <h2 className="mb-6 mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">
+                {variantId}
+                {pathogenicity && <span className={isPath ? 'text-path' : 'text-ink-3'}> — {pathogenicity}</span>}
+              </h2>
+              <ErrorBoundary label="variant"><VariantPanel variantData={loadedVariant} isLoading={isLoading} /></ErrorBoundary>
+            </section>
+          )}
+
+          <section>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Interactions</p>
+            <h2 className="mb-6 mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">Protein network</h2>
+            <ErrorBoundary label="network"><StringNetwork geneSymbol={geneSym || 'BRAF'} /></ErrorBoundary>
+          </section>
+
+          {loadedDisease && (
+            <section>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Therapeutics</p>
+              <h2 className="mb-6 mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">{diseaseName}</h2>
+              <ErrorBoundary label="therapeutics"><TherapeuticPanel diseaseData={loadedDisease} isLoading={isLoading} /></ErrorBoundary>
+            </section>
+          )}
+
+          {loadedLiterature && (
+            <section>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Evidence</p>
+              <h2 className="mb-6 mt-2 font-serif text-[26px] font-medium tracking-[-0.01em]">Literature</h2>
+              <ErrorBoundary label="literature"><LiteraturePanel literatureData={loadedLiterature} isLoading={isLoading} /></ErrorBoundary>
+            </section>
+          )}
         </div>
 
-        {/* 12-Column Responsive Matrix */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-          {/* LEFT SIDEBAR: Search Details & Literature (Columns 1-3) */}
-          <div className="xl:col-span-3 flex flex-col space-y-5">
-            <GenePanel geneData={loadedGene} isLoading={isLoading} />
-            <LiteraturePanel literatureData={loadedLiterature} isLoading={isLoading} />
-          </div>
-
-          {/* CENTER PANEL: Interactive 3D Visualizer & STRING network graph (Columns 4-9 on XL) */}
-          <div className={`xl:col-span-6 flex flex-col space-y-5 ${layoutTab === 'visuals' ? 'block' : 'hidden xl:flex'}`}>
-            <div className="space-y-2">
-              <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
-                {t('panel.molecularViewer')}
-              </span>
-              <MolViewer
-                pdbId={loadedGene?.symbol === 'EGFR' ? '1M17' : loadedGene?.symbol === 'TP53' ? '1AIE' : '1UWH'}
-                representation={molRepresentation}
-                colorMode={molColorMode}
-                onRepresentationChange={setMolRepresentation}
-                onColorModeChange={setMolColorMode}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-3xs uppercase tracking-widest text-slate-400 font-bold block pl-1">
-                {t('panel.stringNetwork')}
-              </span>
-              <StringNetwork geneSymbol={loadedGene?.symbol || 'BRAF'} />
-            </div>
-          </div>
-
-          {/* RIGHT SIDEBAR: Variant Impact & Therapeutics (Columns 10-12 on XL) */}
-          <div className={`xl:col-span-3 flex flex-col space-y-5 ${layoutTab === 'data' ? 'block' : 'hidden xl:flex'}`}>
-            <VariantPanel variantData={loadedVariant} isLoading={isLoading} />
-            <TherapeuticPanel diseaseData={loadedDisease} isLoading={isLoading} />
-          </div>
-        </div>
+        {/* Sources thesis */}
+        <section className="mx-auto mt-24 max-w-[820px] border-t border-line pt-8">
+          <p className="font-mono text-[11px] leading-relaxed text-ink-3">
+            Ensembl · UniProt · ClinVar · gnomAD · GTEx · AlphaFold · RCSB PDB · OpenTargets · Reactome ·
+            InterPro · ChEMBL · openFDA · ClinicalTrials · PubMed · bioRxiv · EuropePMC · OpenAlex · STRING ·
+            dbSNP · UCSC · JASPAR · Human Protein Atlas — <span className="text-ink">read as one.</span>
+          </p>
+        </section>
       </main>
 
       {authDialogMode && <AuthDialog mode={authDialogMode} onClose={() => setAuthDialogMode(null)} />}

@@ -39,12 +39,12 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
 
   // Define nodes and links dynamically based on the current query gene
   const rawNodes: Node[] = [
-    { id: geneSymbol, size: 22, color: 'hsl(180, 80%, 45%)', role: t('string.queryTarget') },
-    { id: 'KRAS', size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
-    { id: 'NRAS', size: 14, color: 'hsl(225, 75%, 55%)', role: t('string.upstreamRegulator') },
-    { id: 'MAP2K1', size: 16, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamEffector') },
-    { id: 'MAPK1', size: 14, color: 'hsl(280, 70%, 55%)', role: t('string.downstreamKinase') },
-    { id: 'EGFR', size: 16, color: 'hsl(142, 70%, 45%)', role: t('string.receptorTyrosineKinase') }
+    { id: geneSymbol, size: 22, color: 'hsl(222, 20%, 12%)', role: t('string.queryTarget') },
+    { id: 'KRAS', size: 14, color: 'hsl(220, 9%, 48%)', role: t('string.upstreamRegulator') },
+    { id: 'NRAS', size: 14, color: 'hsl(220, 9%, 48%)', role: t('string.upstreamRegulator') },
+    { id: 'MAP2K1', size: 16, color: 'hsl(220, 8%, 66%)', role: t('string.downstreamEffector') },
+    { id: 'MAPK1', size: 14, color: 'hsl(220, 8%, 66%)', role: t('string.downstreamKinase') },
+    { id: 'EGFR', size: 16, color: 'hsl(152, 45%, 40%)', role: t('string.receptorTyrosineKinase') }
   ].filter((n, idx, self) => self.findIndex(other => other.id === n.id) === idx);
 
   const links: Link[] = [
@@ -234,7 +234,7 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
 
   return (
     <div
-      className="relative w-full h-[400px] border border-white/10 rounded-2xl bg-slate-950/35 backdrop-blur-md flex flex-col items-center justify-center overflow-hidden group"
+      className="relative w-full h-[400px] border border-line rounded-2xl bg-surface/35 backdrop-blur-md flex flex-col items-center justify-center overflow-hidden group"
       data-testid="string-network-container"
     >
       {isActive && nodesState.length > 0 ? (
@@ -258,7 +258,7 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
                     y1={start.y}
                     x2={end.x}
                     y2={end.y}
-                    stroke="rgba(34, 211, 238, 0.2)"
+                    stroke="rgba(120, 128, 140, 0.35)"
                     strokeWidth={link.score * 3.5}
                     className="transition-all"
                   />
@@ -283,16 +283,16 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
                       cy={node.y}
                       r={node.size + (isHovered ? 2 : 0)}
                       fill={node.color}
-                      stroke={isQuery ? 'white' : 'rgba(255,255,255,0.4)'}
+                      stroke={isQuery ? 'white' : 'rgba(20,24,34,0.5)'}
                       strokeWidth={isQuery ? 2.5 : 1}
-                      className="transition-all filter drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"
+                      className="transition-all filter drop-shadow-[0_0_8px_rgba(20,24,34,0.12)]"
                     />
                     <text
                       x={node.x}
                       y={node.y - node.size - 6}
                       textAnchor="middle"
                       fill="white"
-                      className="text-3xs font-extrabold tracking-tight font-outfit select-none pointer-events-none drop-shadow"
+                      className="text-3xs font-extrabold tracking-tight font-sans select-none pointer-events-none drop-shadow"
                     >
                       {node.id}
                     </text>
@@ -303,50 +303,50 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
           </svg>
 
           {/* Legend and Hover Card */}
-          <div className="absolute top-4 left-4 p-2 bg-slate-950/80 border border-white/10 rounded-lg text-3xs font-outfit space-y-1 shadow-md max-w-xs pointer-events-none">
-            <span className="font-bold text-white block">{t('string.title')}</span>
+          <div className="absolute top-4 left-4 p-2 bg-surface/80 border border-line rounded-lg text-3xs font-sans space-y-1 shadow-md max-w-xs pointer-events-none">
+            <span className="font-bold text-ink block">{t('string.title')}</span>
             <div className="flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              <span className="text-slate-400">{t('string.queryTarget')}</span>
+              <span className="w-2 h-2 rounded-full bg-ink" />
+              <span className="text-ink-2">{t('string.queryTarget')}</span>
             </div>
             <div className="flex items-center space-x-1.5">
               <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span className="text-slate-400">{t('string.regulatorsEffectors')}</span>
+              <span className="text-ink-2">{t('string.regulatorsEffectors')}</span>
             </div>
           </div>
 
           {hoveredNode && (
-            <div className="absolute bottom-4 right-4 p-2.5 bg-slate-950/90 border border-white/15 rounded-xl text-3xs font-outfit shadow-2xl max-w-xs pointer-events-none animate-fade-in">
-              <span className="font-extrabold text-white block text-xs">{hoveredNode.id}</span>
-              <span className="text-slate-400 block mt-0.5">{hoveredNode.role}</span>
-              <span className="text-3xs text-slate-500 block font-mono mt-1">
+            <div className="absolute bottom-4 right-4 p-2.5 bg-surface/90 border border-line rounded-xl text-3xs font-sans shadow-2xl max-w-xs pointer-events-none animate-fade-in">
+              <span className="font-extrabold text-ink block text-xs">{hoveredNode.id}</span>
+              <span className="text-ink-2 block mt-0.5">{hoveredNode.role}</span>
+              <span className="text-3xs text-ink-3 block font-mono mt-1">
                 {t('string.coord', { x: Math.round(hoveredNode.x), y: Math.round(hoveredNode.y) })}
               </span>
-              <span className="text-3xs text-cyan-300 block font-medium mt-1">
+              <span className="text-3xs text-ink block font-medium mt-1">
                 Double click to query this gene
               </span>
             </div>
           )}
 
           {/* Floating Controls */}
-          <div className="absolute bottom-4 left-4 flex space-x-1 bg-slate-950/60 border border-white/10 p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-4 left-4 flex space-x-1 bg-surface/60 border border-line p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-opacity">
             <button
               onClick={() => setZoom(z => Math.min(z * 1.25, 3))}
-              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              className="p-1 hover:bg-wash rounded text-ink-2"
               title="Zoom In"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setZoom(z => Math.max(z / 1.25, 0.5))}
-              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              className="p-1 hover:bg-wash rounded text-ink-2"
               title="Zoom Out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => { setZoom(1); }}
-              className="p-1 hover:bg-white/10 rounded text-slate-300"
+              className="p-1 hover:bg-wash rounded text-ink-2"
               title="Reset Zoom"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -356,14 +356,14 @@ export const StringNetwork: React.FC<StringNetworkProps> = ({ geneSymbol = 'BRAF
       ) : (
         <div
           onClick={handleActivate}
-          className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group-hover:bg-slate-950/70 z-20"
+          className="absolute inset-0 bg-surface/85 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group-hover:bg-surface/70 z-20"
         >
-          <div className="p-4 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-3 animate-pulse">
+          <div className="p-4 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-ink mb-3 animate-pulse">
             <Network className="w-6 h-6" />
           </div>
-          <span className="text-sm font-bold text-white font-outfit">{t('string.activateGraph')}</span>
-          <span className="text-xs text-slate-400 mt-1 font-mono">{t('string.loadingTargetsFor', { gene: geneSymbol })}</span>
-          <span className="text-3xs text-slate-500 mt-2 font-outfit text-center max-w-xs leading-normal">
+          <span className="text-sm font-bold text-ink font-sans">{t('string.activateGraph')}</span>
+          <span className="text-xs text-ink-2 mt-1 font-mono">{t('string.loadingTargetsFor', { gene: geneSymbol })}</span>
+          <span className="text-3xs text-ink-3 mt-2 font-sans text-center max-w-xs leading-normal">
             {t('string.description')}
           </span>
         </div>

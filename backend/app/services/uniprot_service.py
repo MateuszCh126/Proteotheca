@@ -52,7 +52,9 @@ async def get_uniprot_data(client: httpx.AsyncClient, symbol: str, mock_mode: bo
     try:
         url = "https://rest.uniprot.org/uniprotkb/search"
         params = {
-            "query": f"gene:{symbol} AND organism_id:9606",
+            # reviewed:true = Swiss-Prot canonical entry (avoids unreviewed TrEMBL hits);
+            # gene_exact pins the symbol so we don't match paralogues.
+            "query": f"gene_exact:{symbol} AND organism_id:9606 AND reviewed:true",
             "format": "json",
             "size": 1
         }

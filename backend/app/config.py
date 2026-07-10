@@ -16,7 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    mock_mode: bool = True
+    mock_mode: bool = False
     host: str = "127.0.0.1"
     port: int = 8000
     database_url: str = "sqlite+aiosqlite:///./biomed_explorer.db"
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     auth_cookie_name: str = "biomed_token"
     auth_cookie_secure: bool = False
     auth_cookie_samesite: str = "lax"
-    cors_allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    cors_allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,https://proteotheca.vercel.app"
     auto_create_tables: bool = True
 
     @property
